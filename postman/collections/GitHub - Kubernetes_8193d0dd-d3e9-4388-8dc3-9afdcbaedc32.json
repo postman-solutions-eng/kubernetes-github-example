@@ -1,0 +1,210 @@
+{
+    "info": {
+        "_postman_id": "276a7335-da39-4639-8ef3-e259aa30873c",
+        "name": "GitHub - Kubernetes",
+        "description": "## End-to-end test for the Quotable API\n\n1.  LIst all quotes available.\n2.  Select a random quote.\n3.  Save the author ID and a random tag name.\n4.  Check if the author exists.\n5.  Check if the tag exists.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "List quotes",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "id": "7b47f771-9867-4785-84c9-054f58e75add",
+                        "exec": [
+                            "pm.test('status code is 200', () => {",
+                            "  pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('response has an array of items', () => {",
+                            "  const response = pm.response.json();",
+                            "  pm.expect(response).to.have.length.gt(0);",
+                            "});",
+                            "",
+                            "const response = pm.response.json();",
+                            "const rnd = Math.floor(Math.random() * response.length);",
+                            "const id = response[rnd]._id;",
+                            "pm.environment.set('quoteId', id);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "id": "43d56883-4501-4485-b1e0-3801fe2042ea",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/quotes",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "quotes"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Get a single quote",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "id": "4a268bdd-bd7e-454b-8077-88497e58c433",
+                        "exec": [
+                            "pm.test('status code is 200', () => {",
+                            "  pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('response has an author string and tags array', () => {",
+                            "  const response = pm.response.json();",
+                            "  pm.expect(response.author).is.a('string');",
+                            "  pm.expect(response.tags).instanceof(Array);",
+                            "});",
+                            "",
+                            "const response = pm.response.json();",
+                            "pm.environment.set('authorId', response.authorId);",
+                            "",
+                            "const rnd = Math.floor(Math.random() * response.tags.length);",
+                            "pm.environment.set('tagName', response.tags[rnd]);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "id": "1de1c1c9-9156-4149-ab54-3b77c68c0103",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/quotes/{{quoteId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "quotes",
+                        "{{quoteId}}"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Check if author exists",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "id": "cdb85acd-d8ea-480d-82ed-0d4d43ebaeac",
+                        "exec": [
+                            "pm.test('status code is 200', () => {",
+                            "  pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('response includes a matching ID', () => {",
+                            "  const response = pm.response.json();",
+                            "  const authorId = pm.environment.get('authorId');",
+                            "  pm.expect(response._id).to.eql(authorId);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "id": "027836d0-251b-4993-94f3-999b65070525",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/authors/{{authorId}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "authors",
+                        "{{authorId}}"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Check if tag exists",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "id": "04d021ef-5583-459f-8c56-f0923896756c",
+                        "exec": [
+                            "pm.test('status code is 200', () => {",
+                            "  pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('tags include the corresponding name', () => {",
+                            "  const response = pm.response.json();",
+                            "  const tagName = pm.environment.get('tagName');",
+                            "  const tag = response.find((t) => t.name === tagName);",
+                            "  ",
+                            "  pm.expect(tag).to.exist;",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "id": "eab2aae2-be78-424a-8367-775f5e691e17",
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            },
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/tags",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "tags"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "id": "17455c0a-dae0-45f0-8f93-9b2a7595f46f",
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "id": "4f55e8ef-bb23-4f26-8eac-02d63c5afc6c",
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ]
+}

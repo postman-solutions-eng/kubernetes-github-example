@@ -1,0 +1,8 @@
+---
+patches:
+  - path: ./image_patch.json
+    target:
+      kind: Deployment
+resources:
+  - deployment.yaml
+  - service.yaml
