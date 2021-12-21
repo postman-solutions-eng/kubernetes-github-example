@@ -1,0 +1,22 @@
+[
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/image",
+    "value": "${FULL_IMAGE}"
+  },
+  {
+    "op": "replace",
+    "path": "/spec/selector/matchLabels/app",
+    "value": "${APP}"
+  },
+  {
+    "op": "replace",
+    "path": "/metadata/name",
+    "value": "${APP}"
+  },
+  {
+    "op": "replace",
+    "path": "/spec/template/metadata/labels/app",
+    "value": "${APP}"
+  }
+]
