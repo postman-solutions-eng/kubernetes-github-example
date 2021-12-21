@@ -1,10 +1,11 @@
 name: pr-deployment
-
 on:
   issue_comment:
     types: [created]
   manual_dispatch:
-
+permissions:
+  id-token: write
+  contents: read
 jobs:
   deploy-check:
     runs-on: ubuntu-latest

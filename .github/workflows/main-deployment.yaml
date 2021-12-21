@@ -2,6 +2,9 @@ name: main-deployment
 on:
   push:
     branches: [main]
+permissions:
+  id-token: write
+  contents: read
 env:
   APP: quotable
   ECR_REPO: kubernetes-github-example/quotable
