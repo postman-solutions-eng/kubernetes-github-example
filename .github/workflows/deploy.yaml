@@ -64,7 +64,6 @@ jobs:
           export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
           docker build --target=app --tag="$FULL_IMAGE" . && \
           docker push "$FULL_IMAGE"
-          echo "::set-output name=full-image::$FULL_IMAGE"
   kubernetes:
     needs: [push]
     runs-on: ubuntu-latest
@@ -82,9 +81,10 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: build resources, deploy to kubernetes
         env:
-          FULL_IMAGE: ${{ needs.push.steps.push-image.full-image }}
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
           echo "[Workflow] Installing envsub CLI."
           npm install -g envsub
           echo "[Workflow] Patching resources."
