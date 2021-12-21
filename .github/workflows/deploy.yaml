@@ -65,7 +65,7 @@ jobs:
           aws ecr create-repository --repository-name=$ECR_REPO 2>&1 | grep -v RepositoryAlreadyExistsException || true
           export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
           docker build --target=app --tag="$FULL_IMAGE" . && \
-          docker push "$FULL_IMAGE" && \
+          docker push "$FULL_IMAGE"
           echo "::set-output name=full-image::$FULL_IMAGE"
   kubernetes:
     needs: [push]
