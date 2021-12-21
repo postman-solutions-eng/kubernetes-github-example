@@ -3,6 +3,7 @@ name: pr-deployment
 on:
   issue_comment:
     types: [created]
+  manual_dispatch:
 
 jobs:
   deploy-check:
