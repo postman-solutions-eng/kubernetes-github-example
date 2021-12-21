@@ -10,12 +10,32 @@ jobs:
   deploy-check:
     runs-on: ubuntu-latest
     steps:
+      - name: check if commenter has permission to deploy
+        id: check_permissions
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:repository/collaborators/:sender/permission
+          repository: ${{ github.repository }}
+          sender: ${{ github.event.sender.login }}
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: acknowledge deployment request to commenter
         id: check
+        if: |
+          fromJson(steps.check_permissions.outputs.data).permission ==  'admin' || fromJson(steps.check_permissions.outputs.data).permission == 'write' }}
         uses: khan/pull-request-comment-trigger@master
         with:
           trigger: '/deploy'
           reaction: rocket
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: check if commenter has permission to deploy
+        id: get_pull_request_ref
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:repository/pulls/:issue_id
+          repository: ${{ github.repository }}
+          issue_id: ${{ github.event.issue.number }}
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
     outputs:
