@@ -1,5 +1,8 @@
 name: deploy
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 env:
   IMAGE: se-github-example-quotable
   AWS_REGION: us-east-2
@@ -17,9 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: run functional tests
-        run: docker build --target=test-functional .
+        run: npm run container-test-functional
       - name: run e2e tests
-        run: docker build --target=test-e2e .
+        run: npm run container-test-e2e
   push:
     needs: [test]
     runs-on: ubuntu-latest

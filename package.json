@@ -4,12 +4,12 @@
   "description": "This is an example project showing how to integrate GitHub with a Kubernetes cluster running on AWS EKS.",
   "main": "server.js",
   "scripts": {
-    "test": "npm run container-test-functional && npm run container-test-e2e",
-    "container-test-functional": "node ./scripts/test-functional.js",
-    "container-test-e2e": "node ./scripts/test-e2e.js",
-    "local-test": "npm run local-test-functional && npm run local-test-e2e",
-    "local-test-functional": "jest",
-    "local-test-e2e": "node ./scripts/local-test-e2e.js",
+    "container-test": "npm run container-test-functional && npm run container-test-e2e",
+    "container-test-functional": "node ./scripts/container-test-functional.js",
+    "container-test-e2e": "node ./scripts/container-test-e2e.js",
+    "test": "npm run test-functional && npm run test-e2e",
+    "test-functional": "jest",
+    "test-e2e": "node ./scripts/test-e2e.js",
     "start": "node ./src/server.js"
   },
   "repository": {
