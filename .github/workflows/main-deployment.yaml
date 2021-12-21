@@ -9,7 +9,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    uses: ./.github/workflows/deploy.yml
+    uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@pr-workflows
     with:
       app-name: quotable
       ecr-repo-name: kubernetes-github-example/quotable

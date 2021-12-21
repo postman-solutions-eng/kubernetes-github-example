@@ -66,7 +66,7 @@ jobs:
     outputs:
       deployment: ${{ needs.setup-deployment.outputs.deployment }}
     runs-on: ubuntu-latest
-    uses: ./.github/workflows/deploy.yml
+    uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@pr-workflows
     with:
       app-name: ${{ format('dev-quotable-pr-{0}', github.event.number) }}
       ecr-repo-name: ${{ format('github-kubernetes-example/dev-quotable-pr-{0}', github.event.number) }}
