@@ -67,7 +67,6 @@ jobs:
     needs: [setup-deployment]
     outputs:
       deployment: ${{ needs.setup-deployment.outputs.deployment }}
-    runs-on: ubuntu-latest
     uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@main
     with:
       app-name: ${{ format('dev-quotable-pr-{0}', github.event.number) }}
