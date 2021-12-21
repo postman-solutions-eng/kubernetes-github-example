@@ -1,4 +1,4 @@
-name: test
+name: pr-test
 on:
   push:
     branches-ignore: [main]

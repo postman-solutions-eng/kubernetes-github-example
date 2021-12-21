@@ -1,12 +1,27 @@
 name: deploy
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      app-name:
+        description: The name of the application to deploy to Kubernetes.
+        type: string
+      ecr-repo-name:
+        description: The ECR repo name for pushing images.
+        type: string
+    secrets:
+      AWS_ASSUME_ROLE_ARN:
+        required: true
+      AWS_SESSION_DURATION:
+        required: true
+      AWS_EKS_CLUSTER:
+        required: true
+      AWS_REGION:
+        required: true
 env:
-  APP: quotable
-  ECR_REPO: kubernetes-github-example/quotable
-  AWS_REGION: us-east-2
+  APP: ${{ inputs.app-name }}
+  ECR_REPO: ${{ inputs.ecr-repo-name }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
   AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
   AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
   AWS_EKS_CLUSTER: ${{ secrets.AWS_EKS_CLUSTER }}
