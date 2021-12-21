@@ -2,22 +2,91 @@ name: main-deployment
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 permissions:
   id-token: write
   contents: read
 env:
   APP: quotable
   ECR_REPO: kubernetes-github-example/quotable
-
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+  AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
+  AWS_EKS_CLUSTER: ${{ secrets.AWS_EKS_CLUSTER }}
+  DOCKER_BUILDKIT: 1
+  BUILDKIT_INLINE_CACHE: 1
+permissions:
+  id-token: write
+  contents: read
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
-    uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@pr-workflows
-    with:
-      app-name: quotable
-      ecr-repo-name: kubernetes-github-example/quotable
-    secrets:
-      AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-      AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
-      AWS_EKS_CLUSTER: ${{ secrets.AWS_EKS_CLUSTER }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: run functional tests
+        run: npm run container-test-functional
+      - name: run e2e tests
+        run: npm run container-test-e2e
+  push:
+    needs: [test]
+    runs-on: ubuntu-latest
+    outputs:
+      full-image: ${{ steps.push-image.outputs.full-image }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: configure AWS credentials
+        id: configure-aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ASSUME_ROLE_ARN }}
+          role-duration-seconds: ${{ env.AWS_SESSION_DURATION }}
+      - name: login to AWS ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: build image and push to ECR
+        id: push-image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          aws ecr create-repository --repository-name=$ECR_REPO 2>&1 | grep -v RepositoryAlreadyExistsException || true
+          export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
+          docker build --target=app --tag="$FULL_IMAGE" . && \
+          docker push "$FULL_IMAGE" && \
+          echo "::set-output name=full-image::$FULL_IMAGE"
+  kubernetes:
+    needs: [push]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: configure AWS credentials
+        id: configure-aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ASSUME_ROLE_ARN }}
+          role-duration-seconds: ${{ env.AWS_SESSION_DURATION }}
+      - name: login to AWS ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: build resources, deploy to kubernetes
+        env:
+          FULL_IMAGE: ${{ needs.push.outputs.full-image }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "[Workflow] Installing envsub CLI."
+          npm install -g envsub
+          echo "[Workflow] Patching resources."
+          envsub ./kubernetes/deployment_patch.json
+          cat ./kubernetes/deployment_patch.json
+          envsub ./kubernetes/service_patch.json
+          cat ./kubernetes/service_patch.json
+          echo "[Workflow] Generating Kubernetes resources with kustomize."
+          kubectl kustomize ./kubernetes -o kube.yaml
+          echo "[Workflow] Getting kubeconfig data for $AWS_EKS_CLUSTER."
+          aws eks update-kubeconfig --name $AWS_EKS_CLUSTER
+          echo "[Workflow] Deploy Kubernetes resources"
+          kubectl apply -f ./kube.yaml
+          kubectl rollout status deployment/$APP
+          kubectl get svc $APP -o jsonpath='Deployed to URL: {.status.loadBalancer.ingress[0].hostname}'
