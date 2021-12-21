@@ -4,7 +4,8 @@ on:
     branches: [main]
   workflow_dispatch:
 env:
-  IMAGE: se-github-example-quotable
+  APP: quotable
+  ECR_REPO: kubernetes-github-example/quotable
   AWS_REGION: us-east-2
   AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
   AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
@@ -44,9 +45,9 @@ jobs:
         id: push-image
         env:
           ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          ECR_REPO: ${{ env.IMAGE }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          aws ecr create-repository --repository-name=$ECR_REPO 2>&1 | grep -v RepositoryAlreadyExistsException || true
           export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
           docker build --target=app --tag="$FULL_IMAGE" . && \
           docker push "$FULL_IMAGE" && \
@@ -73,13 +74,16 @@ jobs:
         run: |
           echo "[Workflow] Installing envsub CLI."
           npm install -g envsub
-          echo "[Workflow] Generating image patch."
-          envsub ./kubernetes/image_patch.json ./kubernetes/image_patch.json
+          echo "[Workflow] Patching resources."
+          envsub ./kubernetes/deployment_patch.json
+          cat ./kubernetes/deployment_patch.json
+          envsub ./kubernetes/service_patch.json
+          cat ./kubernetes/service_patch.json
           echo "[Workflow] Generating Kubernetes resources with kustomize."
           kubectl kustomize ./kubernetes -o kube.yaml
-          echo "Getting kubeconfig data."
+          echo "[Workflow] Getting kubeconfig data for $AWS_EKS_CLUSTER."
           aws eks update-kubeconfig --name $AWS_EKS_CLUSTER
-          echo "Deploy Kubernetes resources"
+          echo "[Workflow] Deploy Kubernetes resources"
           kubectl apply -f ./kube.yaml
-          kubectl rollout status deployment/$IMAGE
-          kubectl get svc $IMAGE -o jsonpath='Deployed to URL: {.status.loadBalancer.ingress[0].hostname}'
+          kubectl rollout status deployment/$APP
+          kubectl get svc $APP -o jsonpath='Deployed to URL: {.status.loadBalancer.ingress[0].hostname}'
