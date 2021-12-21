@@ -17,12 +17,12 @@ RUN npm ci
 FROM cibuilder AS test-functional
 WORKDIR /app
 COPY --from=cibuilder /app ./
-RUN npm run local-test-functional
+RUN npm run test-functional
 
 FROM cibuilder AS test-e2e
 WORKDIR /app
 COPY --from=cibuilder /app ./
-RUN npm run local-test-e2e
+RUN npm run test-e2e
 
 FROM node:alpine AS builder
 WORKDIR /app
