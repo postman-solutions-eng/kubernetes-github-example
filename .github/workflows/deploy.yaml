@@ -42,8 +42,6 @@ jobs:
   push:
     needs: [test]
     runs-on: ubuntu-latest
-    outputs:
-      full-image: ${{ steps.push-image.outputs.full-image }}
     steps:
       - uses: actions/checkout@v2
       - name: configure AWS credentials
@@ -84,7 +82,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: build resources, deploy to kubernetes
         env:
-          FULL_IMAGE: ${{ needs.push.outputs.full-image }}
+          FULL_IMAGE: ${{ needs.push.steps.push-image.full-image }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           echo "[Workflow] Installing envsub CLI."
