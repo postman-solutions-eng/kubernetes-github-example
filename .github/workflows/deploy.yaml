@@ -42,7 +42,11 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      CONTEXT: ${{ inputs.passthrough-context }}
     steps:
+      - name: log passthrough context
+        run: echo "::debug::$CONTEXT"
       - uses: actions/checkout@v2
       - name: run functional tests
         run: npm run container-test-functional

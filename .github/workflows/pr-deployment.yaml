@@ -84,6 +84,10 @@ jobs:
           state: in_progress
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: debug deployment data
+        env:
+          CONTEXT: ${{ steps.create_deployment.outputs.data }}
+        run: echo "::debug::$CONTEXT"
 
   deploy:
     name: deploy the pull request
