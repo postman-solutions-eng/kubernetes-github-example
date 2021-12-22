@@ -93,7 +93,7 @@ jobs:
           path: artifacts/deployment.json
   push:
     name: build and push image
-    needs: [test]
+    needs: [setup-deployment]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -121,7 +121,7 @@ jobs:
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
 
   set-deployment-outcome:
-    needs: [deploy]
+    needs: [kubernetes]
     runs-on: ubuntu-latest
     steps:
       - name: get download artifact
