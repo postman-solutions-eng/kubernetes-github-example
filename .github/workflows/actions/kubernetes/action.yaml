@@ -56,4 +56,4 @@ runs:
         echo "[Workflow] Deploy Kubernetes resources"
         kubectl apply -f ./kube.yaml
         kubectl rollout status deployment/$APP
-        kubectl get svc $APP -o jsonpath='Deployed to URL: {.status.loadBalancer.ingress[0].hostname}'
+        kubectl get svc $APP -o jsonpath='::debug::Deployed to: {.status.loadBalancer.ingress[0].hostname}'
