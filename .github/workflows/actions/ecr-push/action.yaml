@@ -40,6 +40,8 @@ runs:
         ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         IMAGE_TAG: ${{ inputs.image-tag }}
         BUILD_TARGET: ${{ inputs.build-target }}
+        DOCKER_BUILDKIT: 1
+        BUILDKIT_INLINE_CACHE: 1
       shell: bash
       run: |
         aws ecr create-repository --repository-name=$ECR_REPO 2>&1 | grep -v RepositoryAlreadyExistsException || true

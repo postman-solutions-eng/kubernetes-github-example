@@ -80,19 +80,8 @@ jobs:
           state: in_progress
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: write deployment data
-        env:
-          DEPLOYMENT_DATA: ${{ steps.create_deployment.outputs.data }}
-        run: |
-          mkdir -p artifacts
-          echo $DEPLOYMENT_DATA > artifacts/deployment.json
-      - name: upload deployment data artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: deployment-data
-          path: artifacts/deployment.json
   push:
-    name: build and push image
+    name: build and push image to ECR
     needs: [setup-deployment]
     runs-on: ubuntu-latest
     outputs:
@@ -108,6 +97,7 @@ jobs:
           build-target: app
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
   kubernetes:
+    name: deploy to Kubernetes
     needs: [push]
     runs-on: ubuntu-latest
     outputs:
@@ -123,24 +113,10 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.issue.number) }}
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
-
   set-deployment-outcome:
     needs: [kubernetes]
     runs-on: ubuntu-latest
     steps:
-      - name: get download artifact
-        uses: actions/download-artifact@v2
-        id: download
-        with:
-          name: deployment-data
-          path: artifacts
-      - name: read deployment data
-        id: deployment-data
-        env:
-          DEPLOYMENT_PATH: ${{ steps.download.outputs.download-path }}
-        run: |
-          export DEPLOYMENT=$(cat $DEPLOYMENT_PATH/deployment.json) 
-          echo "::set-output name=deployment::$DEPLOYMENT"
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x
@@ -148,7 +124,6 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
-          # deployment: ${{ fromJson(steps.deployment-data.outputs.deployment).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:
@@ -161,7 +136,6 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
-          # deployment: ${{ fromJson(steps.deployment-data.outputs.deployment).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:
