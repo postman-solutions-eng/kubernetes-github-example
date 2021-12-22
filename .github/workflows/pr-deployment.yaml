@@ -90,8 +90,8 @@ jobs:
     needs: [setup-deployment]
     uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@main
     with:
-      app-name: ${{ format('dev-quotable-pr-{0}', github.event.number) }}
-      ecr-repo-name: ${{ format('github-kubernetes-example/dev-quotable-pr-{0}', github.event.number) }}
+      app-name: ${{ format('dev-quotable-pr-{0}', github.event.issue.number) }}
+      ecr-repo-name: ${{ format('github-kubernetes-example/dev-quotable-pr-{0}', github.event.issue.number) }}
       passthrough-context: ${{ needs.setup-deployment.create_deployment.data }}
     secrets:
       AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
