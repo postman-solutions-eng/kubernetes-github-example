@@ -12,7 +12,7 @@ on:
         type: string
         required: true
       passthrough-context:
-        decription: Context to pass to the next job as output.
+        description: Context to pass to the next job as output.
         type: string
     outputs:
       context:
