@@ -11,13 +11,6 @@ on:
         description: The ECR repo name for pushing images.
         type: string
         required: true
-      passthrough-context:
-        description: Context to pass to the next job as output.
-        type: string
-    outputs:
-      context:
-        description: Context that was used as an input to the workflow.
-        value: ${{ jobs.kubernetes.outputs.context }}
     secrets:
       AWS_ASSUME_ROLE_ARN:
         required: true
@@ -42,11 +35,7 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      CONTEXT: ${{ inputs.passthrough-context }}
     steps:
-      - name: log passthrough context
-        run: echo "::debug::$CONTEXT"
       - uses: actions/checkout@v2
       - name: run functional tests
         run: npm run container-test-functional
@@ -80,8 +69,6 @@ jobs:
   kubernetes:
     needs: [push]
     runs-on: ubuntu-latest
-    outputs:
-      context: ${{ inputs.passthrough-context }}
     steps:
       - uses: actions/checkout@v2
       - name: configure AWS credentials
