@@ -6,17 +6,12 @@ on:
 permissions:
   id-token: write
   contents: read
-env:
-  APP: quotable
-  ECR_REPO: kubernetes-github-example/quotable
-
 jobs:
   deploy:
     uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@main
     with:
       app-name: quotable
       ecr-repo-name: kubernetes-github-example/quotable
-      environment: production
     secrets:
       AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
       AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
