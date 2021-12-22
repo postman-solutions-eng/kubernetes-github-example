@@ -86,10 +86,10 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: write deployment data
         env:
-          CONTEXT: ${{ steps.create_deployment.outputs.data }}
+          DEPLOYMENT_DATA: ${{ steps.create_deployment.outputs.data }}
         run: |
           mkdir -p artifacts
-          echo $CONTEXT > artifacts/deployment.json
+          echo $DEPLOYMENT_DATA > artifacts/deployment.json
       - name: upload deployment data artifact
         uses: actions/upload-artifact@v2
         with:
@@ -103,7 +103,6 @@ jobs:
     with:
       app-name: ${{ format('dev-quotable-pr-{0}', github.event.issue.number) }}
       ecr-repo-name: ${{ format('github-kubernetes-example/dev-quotable-pr-{0}', github.event.issue.number) }}
-      passthrough-context: ${{ needs.setup-deployment.create_deployment.data }}
     secrets:
       AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
       AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
@@ -142,7 +141,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ needs.deploy.outputs.deployment }}
+          deployment: ${{ fromJson(steps.deployment-data.outputs.deployment).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:
