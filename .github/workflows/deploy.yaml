@@ -10,6 +10,10 @@ on:
         description: The ECR repo name for pushing images.
         type: string
         required: true
+      environment:
+        description: The GitHub Environment to use when deploying.
+        type: string
+        required: true
     secrets:
       AWS_ASSUME_ROLE_ARN:
         required: true
@@ -19,6 +23,7 @@ on:
         required: true
       AWS_REGION:
         required: true
+environment: ${{ inputs.environment }}
 env:
   APP: ${{ inputs.app-name }}
   ECR_REPO: ${{ inputs.ecr-repo-name }}
