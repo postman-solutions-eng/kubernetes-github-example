@@ -85,12 +85,11 @@ jobs:
   deploy:
     name: deploy the pull request
     needs: [setup-deployment]
-    outputs:
-      deployment: ${{ needs.setup-deployment.outputs.deployment }}
     uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@main
     with:
       app-name: ${{ format('dev-quotable-pr-{0}', github.event.number) }}
       ecr-repo-name: ${{ format('github-kubernetes-example/dev-quotable-pr-{0}', github.event.number) }}
+      passthrough-context: ${{ needs.setup-deployment.create_deployment.data }}
     secrets:
       AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
       AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
@@ -107,7 +106,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ needs.deploy.outputs.deployment }}
+          deployment: ${{ fromJson(needs.deploy.outputs.context).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:
