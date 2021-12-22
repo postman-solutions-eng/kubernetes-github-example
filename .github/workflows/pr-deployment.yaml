@@ -42,7 +42,6 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
     outputs:
       triggered: ${{ steps.check.outputs.triggered }}
-
   setup-deployment:
     runs-on: ubuntu-latest
     needs: [deploy-check]
@@ -59,7 +58,6 @@ jobs:
           issue_id: ${{ github.event.issue.number }}
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
       - name: create deployment
         id: create_deployment
         uses: octokit/request-action@v2.x
@@ -71,7 +69,6 @@ jobs:
           auto_merge: false
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
       - name: set deployment status to in progress
         id: start_deployment
         uses: octokit/request-action@v2.x
@@ -94,19 +91,34 @@ jobs:
         with:
           name: deployment-data
           path: artifacts/deployment.json
-
-  deploy:
-    name: deploy the pull request
-    needs: [setup-deployment]
-    uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@main
-    with:
-      app-name: ${{ format('dev-quotable-pr-{0}', github.event.issue.number) }}
-      ecr-repo-name: ${{ format('github-kubernetes-example/dev-quotable-pr-{0}', github.event.issue.number) }}
-    secrets:
-      AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-      AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
-      AWS_EKS_CLUSTER: ${{ secrets.AWS_EKS_CLUSTER }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
+  push:
+    name: build and push image
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/workflows/actions/ecr-push
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
+          ecr-repo-name: ${{ secrets.ECR_REPO }}
+          build-target: app
+          image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
+  kubernetes:
+    needs: [push]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/workflows/actions/kubernetes
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
+          aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
+          ecr-repo-name: ${{ secrets.ECR_REPO }}
+          app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.issue.number) }}
+          image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
 
   set-deployment-outcome:
     needs: [deploy]

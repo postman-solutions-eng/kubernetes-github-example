@@ -13,6 +13,9 @@ inputs:
   ecr-repo-name:
     type: string
     required: true
+  image-tag:
+    type: string
+    required: true
   build-target:
     type: string
     required: false
@@ -35,7 +38,7 @@ runs:
       env:
         ECR_REPO: ${{ inputs.ecr-repo-name }}
         ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG: ${{ inputs.image-tag }}
         BUILD_TARGET: ${{ inputs.build-target }}
       shell: bash
       run: |

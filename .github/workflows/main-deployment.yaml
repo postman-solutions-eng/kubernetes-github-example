@@ -30,6 +30,7 @@ jobs:
           aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           build-target: app
+          image-tag: ${{ github.sha }}
   kubernetes:
     needs: [push]
     runs-on: ubuntu-latest
@@ -43,3 +44,4 @@ jobs:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ secrets.APP }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
+          image-tag: ${{ github.sha }}
