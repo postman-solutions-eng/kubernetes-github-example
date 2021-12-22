@@ -6,6 +6,9 @@ on:
 permissions:
   id-token: write
   contents: read
+  deployments: write
+  statuses: write
+  pull-requests: read
 jobs:
   deploy-check:
     runs-on: ubuntu-latest
