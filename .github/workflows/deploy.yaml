@@ -14,11 +14,10 @@ on:
       passthrough-context:
         description: Context to pass to the next job as output.
         type: string
-        default: ''
     outputs:
       context:
         description: Context that was used as an input to the workflow.
-        value: ${{ inputs.passthrough-context }}
+        value: ${{ jobs.kubernetes.outputs.context }}
     secrets:
       AWS_ASSUME_ROLE_ARN:
         required: true
@@ -77,6 +76,8 @@ jobs:
   kubernetes:
     needs: [push]
     runs-on: ubuntu-latest
+    outputs:
+      context: ${{ inputs.passthrough-context }}
     steps:
       - uses: actions/checkout@v2
       - name: configure AWS credentials
