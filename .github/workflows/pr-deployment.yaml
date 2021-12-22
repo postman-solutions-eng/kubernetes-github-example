@@ -65,7 +65,8 @@ jobs:
           route: POST /repos/:repository/deployments
           repository: ${{ github.repository }}
           ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
-          environment: dev
+          environment: ${{ format('dev-pr-{0}', github.event.issue.number) }}
+          transient_environment: true
           auto_merge: false
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
