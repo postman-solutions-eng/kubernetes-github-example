@@ -118,7 +118,7 @@ jobs:
         id: download
         with:
           name: deployment-data
-          path: artifacts/deployment.json
+          path: artifacts
       - name: read deployment data
         id: deployment-data
         env:
