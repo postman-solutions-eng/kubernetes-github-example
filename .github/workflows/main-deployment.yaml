@@ -14,8 +14,8 @@ jobs:
   deploy:
     uses: postman-solutions-eng/kubernetes-github-example/.github/workflows/deploy.yaml@main
     with:
-      app-name: quotable
-      ecr-repo-name: kubernetes-github-example/quotable
+      app-name: ${{ env.APP }}
+      ecr-repo-name: ${{ env.ECR_REPO }}
     secrets:
       AWS_ASSUME_ROLE_ARN: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
       AWS_SESSION_DURATION: ${{ secrets.AWS_SESSION_DURATION }}
