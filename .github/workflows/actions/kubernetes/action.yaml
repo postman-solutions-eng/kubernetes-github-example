@@ -21,7 +21,6 @@ runs:
   - using: composite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: configure AWS credentials
         id: configure-aws
         uses: aws-actions/configure-aws-credentials@v1
