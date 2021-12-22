@@ -1,6 +1,5 @@
 name: deploy to kubernetes
 description: Deploys images to Kubernetes.
-
 inputs:
   aws-region:
     type: string
@@ -9,6 +8,9 @@ inputs:
     type: string
     required: true
   aws-role-duration-seconds:
+    type: string
+    required: true
+  aws-eks-cluster:
     type: string
     required: true
   app-name:
@@ -26,13 +28,14 @@ runs:
       with:
         aws-region: ${{ inputs.aws-region }}
         role-to-assume: ${{ inputs.aws-role-to-assume }}
-        role-duration-seconds: ${{ inputs.aws-aws-role-duration-seconds }}
+        role-duration-seconds: ${{ inputs.aws-role-duration-seconds }}
     - name: login to AWS ECR
       id: ecr-login
       uses: aws-actions/amazon-ecr-login@v1
     - name: build resources, deploy to kubernetes
       env:
         APP: ${{ inputs.app-name }}
+        AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}
         ECR_REPO: ${{ inputs.ecr-repo-name }}
         ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
