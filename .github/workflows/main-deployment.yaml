@@ -41,6 +41,7 @@ jobs:
       - name: build image and push to ECR
         id: push-image
         env:
+          ECR_REPO: ${{ secrets.ECR_REPO }}
           ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
