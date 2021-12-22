@@ -118,10 +118,13 @@ jobs:
         id: download
         with:
           name: deployment-data
+          path: artifacts/deployment.json
       - name: read deployment data
         id: deployment-data
+        env:
+          DEPLOYMENT_PATH: ${{ steps.download.outputs.download-path }}
         run: |
-          export DEPLOYMENT=$(cat artifacts/deployment.json) 
+          export DEPLOYMENT=$(cat $DEPLOYMENT_PATH) 
           echo "::set-output name=deployment::$DEPLOYMENT"
       - name: set deployment status to success
         id: successful_deployment
