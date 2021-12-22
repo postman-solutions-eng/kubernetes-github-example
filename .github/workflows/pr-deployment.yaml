@@ -22,7 +22,7 @@ jobs:
       - name: acknowledge deployment request to commenter
         id: check
         if: |
-          fromJson(steps.check_permissions.outputs.data).permission ==  'admin' || fromJson(steps.check_permissions.outputs.data).permission == 'write' }}
+          fromJson(steps.check_permissions.outputs.data).permission ==  'admin' || fromJson(steps.check_permissions.outputs.data).permission == 'write'
         uses: khan/pull-request-comment-trigger@master
         with:
           trigger: '/deploy'
