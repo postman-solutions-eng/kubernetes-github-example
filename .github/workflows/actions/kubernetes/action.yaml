@@ -19,7 +19,6 @@ inputs:
     required: true
 runs:
   using: composite
-  runs-on: ubuntu-latest
   steps:
     - name: configure AWS credentials
       id: configure-aws
@@ -37,6 +36,7 @@ runs:
         ECR_REPO: ${{ inputs.ecr-repo-name }}
         ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
+      shell: bash
       run: |
         export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
         echo "[Workflow] Installing envsub CLI."
