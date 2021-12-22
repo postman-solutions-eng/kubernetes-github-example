@@ -124,7 +124,7 @@ jobs:
         env:
           DEPLOYMENT_PATH: ${{ steps.download.outputs.download-path }}
         run: |
-          export DEPLOYMENT=$(cat $DEPLOYMENT_PATH) 
+          export DEPLOYMENT=$(cat $DEPLOYMENT_PATH/deployment.json) 
           echo "::set-output name=deployment::$DEPLOYMENT"
       - name: set deployment status to success
         id: successful_deployment
