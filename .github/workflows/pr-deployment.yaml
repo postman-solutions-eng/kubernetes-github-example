@@ -4,12 +4,13 @@ on:
     types: [created]
   workflow_dispatch:
 permissions:
-  id-token: write
-  contents: read
-  deployments: write
-  statuses: write
-  pull-requests: read
-  issues: write
+  write-all
+  # id-token: write
+  # contents: read
+  # deployments: write
+  # statuses: write
+  # pull-requests: read
+  # issues: write
 jobs:
   deploy-check:
     runs-on: ubuntu-latest
