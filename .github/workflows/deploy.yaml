@@ -14,6 +14,7 @@ on:
       passthrough-context:
         description: Context to pass to the next job as output.
         type: string
+        default: ''
     outputs:
       context:
         description: Context that was used as an input to the workflow.
