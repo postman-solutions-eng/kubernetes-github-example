@@ -6,9 +6,17 @@ on:
       app-name:
         description: The name of the application to deploy to Kubernetes.
         type: string
+        required: true
       ecr-repo-name:
         description: The ECR repo name for pushing images.
         type: string
+        required: true
+      passthrough-context:
+        decription: Context to pass to the next job as output.
+        type: string
+    outputs:
+      context:
+        description: Context that was used as an input to the workflow.
     secrets:
       AWS_ASSUME_ROLE_ARN:
         required: true
@@ -67,6 +75,8 @@ jobs:
   kubernetes:
     needs: [push]
     runs-on: ubuntu-latest
+    outputs:
+      context: ${{ inputs.passthrough-context }}
     steps:
       - uses: actions/checkout@v2
       - name: configure AWS credentials
