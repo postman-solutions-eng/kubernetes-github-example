@@ -31,7 +31,7 @@ jobs:
           reaction: rocket
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: check if commenter has permission to deploy
+      - name: get pull request ref
         id: get_pull_request_ref
         uses: octokit/request-action@v2.x
         with:
