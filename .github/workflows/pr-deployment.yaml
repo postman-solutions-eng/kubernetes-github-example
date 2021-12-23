@@ -25,7 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: set previous deployment as inactive
-        if: ${{ fromJson(steps.check-previous.outputs.data)[0] }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
@@ -38,9 +38,9 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: checkout to access composite action
         uses: actions/checkout@v2
-        if: ${{ fromJson(steps.check-previous.outputs.data)[0] }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
       - name: delete from Kubernetes
-        if: ${{ fromJson(steps.check-previous.outputs.data)[0] }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
         uses: ./.github/workflows/actions/kubernetes
         with:
           aws-region: ${{ secrets.AWS_REGION }}
@@ -54,7 +54,7 @@ jobs:
   deploy-check:
     needs: [evict-inactive]
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'issue_comment' && github.event.action == 'created' && github.event.issue.pull_request }}
+    if: ${{ github.event_name == 'issue_comment' && toJson(github.event.issue.pull_request) }}
     steps:
       - name: check if commenter has permission to deploy
         id: check_permissions
@@ -138,7 +138,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deployment: ${{ needs.push.outputs.deployment }}
-      url: ${{ steps.deploy-to-kubernetes.url }}
+      url: ${{ steps.deploy-to-kubernetes.outputs.url }}
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/workflows/actions/kubernetes
@@ -162,7 +162,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
-          environment_url: ${{ needs.kubernetes.outputs.url }}
+          environment_url: ${{ format('http://{0}', needs.kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:

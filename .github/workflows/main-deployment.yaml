@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deployment: ${{ needs.push.outputs.deployment }}
-      url: ${{ steps.deploy-to-kubernetes.url }}
+      url: ${{ steps.deploy-to-kubernetes.outputs.url }}
     steps:
       - uses: actions/checkout@v2
       - id: deploy-to-kubernetes
@@ -96,7 +96,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
-          environment_url: ${{ needs.kubernetes.outputs.url }}
+          environment_url: ${{ format('http://{0}', needs.kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:
