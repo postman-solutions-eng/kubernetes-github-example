@@ -28,7 +28,7 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: get ref from pr issue
         id: get-ref-from-issue
-        if: github.event_name == 'issue_comment'
+        if: success()
         shell: bash
         env:
           REF: ${{ fromJson(steps.get-issue.outputs.data).head.ref }}
