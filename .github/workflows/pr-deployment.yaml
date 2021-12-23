@@ -16,7 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - shell: bash
-        run: echo $GITHUB_ENV
+        env:
+          GHENV: ${{ fromJson(github) }}
+        run: echo $GHENV
       - name: check for previous deployment
         id: check-previous
         uses: octokit/request-action@v2.x
