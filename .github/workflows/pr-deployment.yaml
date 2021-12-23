@@ -17,7 +17,7 @@ jobs:
     steps:
       - shell: bash
         env:
-          GHENV: ${{ fromJson(github) }}
+          GHENV: ${{ toJson(fromJson(github)) }}
         run: echo $GHENV
       - name: check for previous deployment
         id: check-previous
