@@ -37,7 +37,7 @@ jobs:
           environment: production
           transient_environment: true
           auto_merge: false
-          required_contexts: [test]
+          required_contexts: '["test"]'
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: set deployment status to in progress
