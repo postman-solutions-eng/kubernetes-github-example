@@ -31,7 +31,8 @@ jobs:
         if: success()
         shell: bash
         env:
-          REF: ${{ fromJson(steps.get-issue.outputs.data).head.ref }}
+          REF: test
+          #${{ fromJson(steps.get-issue.outputs.data).head.ref }}
         run: echo "::set-output name=ref::$REF"
       - name: get ref from pr
         id: get-ref-from-pr
