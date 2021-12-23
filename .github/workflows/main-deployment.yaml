@@ -6,6 +6,8 @@ on:
 permissions:
   id-token: write
   contents: read
+  deployments: write
+  statuses: write
 jobs:
   test:
     name: run tests
@@ -19,9 +21,40 @@ jobs:
         run: npm run container-test-functional
       - name: run e2e tests
         run: npm run container-test-e2e
+  setup-deployment:
+    runs-on: ubuntu-latest
+    needs: [test]
+    outputs:
+      deployment: ${{ fromJson(steps.create_deployment.outputs.data).id }}
+    steps:
+      - name: create deployment
+        id: create_deployment
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/:repository/deployments
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          environment: production
+          transient_environment: true
+          auto_merge: false
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: set deployment status to in progress
+        id: start_deployment
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ fromJson(steps.create_deployment.outputs.data).id }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: in_progress
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   push:
     name: build and push to ECR
-    needs: [test]
+    needs: [setup-deployment]
+    outputs:
+      deployment: ${{ needs.setup-deployment.outputs.deployment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -37,9 +70,13 @@ jobs:
     name: deploy to Kubernetes
     needs: [push]
     runs-on: ubuntu-latest
+    outputs:
+      deployment: ${{ needs.push.outputs.deployment }}
+      url: ${{ steps.deploy-to-kubernetes.url }}
     steps:
       - uses: actions/checkout@v2
-      - uses: ./.github/workflows/actions/kubernetes
+      - id: deploy-to-kubernetes
+        uses: ./.github/workflows/actions/kubernetes
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
@@ -48,3 +85,31 @@ jobs:
           app-name: ${{ secrets.APP }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           image-tag: ${{ github.sha }}
+  set-deployment-outcome:
+    needs: [kubernetes]
+    runs-on: ubuntu-latest
+    steps:
+      - name: set deployment status to success
+        id: successful_deployment
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ needs.kubernetes.outputs.deployment }}
+          environment_url: ${{ needs.kubernetes.outputs.url }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: success
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: set deployment status to failure
+        id: failed_deployment
+        uses: octokit/request-action@v2.x
+        if: failure()
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ needs.kubernetes.outputs.deployment }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: failure
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
