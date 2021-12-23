@@ -155,6 +155,13 @@ jobs:
     needs: [kubernetes]
     runs-on: ubuntu-latest
     steps:
+      - name: set env url to var
+        shell: bash
+        env:
+          ENCODED_URL: ${{ needs.kubernetes.outputs.url }}
+        run: |
+          export DECODED=$(base64 -D $ENCODED_URL)
+          ::set-env name=ENV_URL::$DECODED
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x
@@ -162,7 +169,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
-          environment_url: ${{ format('http://{0}', needs.kubernetes.outputs.url) }}
+          environment_url: ${{ format('http://{0}', env.ENV_URL) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:
