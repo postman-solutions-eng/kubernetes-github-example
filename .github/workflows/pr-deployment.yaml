@@ -21,7 +21,7 @@ jobs:
         with:
           route: GET /repos/:repository/deployments
           repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
           environment: development
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
