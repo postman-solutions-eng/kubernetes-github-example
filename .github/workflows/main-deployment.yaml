@@ -36,7 +36,8 @@ jobs:
           repository: ${{ github.repository }}
           ref: ${{ github.ref }}
           environment: production
-          transient_environment: true
+          transient_environment: false
+          production_environment: true
           auto_merge: false
           required_contexts: '[]'
         env:
