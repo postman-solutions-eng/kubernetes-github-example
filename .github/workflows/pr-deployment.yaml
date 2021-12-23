@@ -24,13 +24,8 @@ jobs:
           environment: ${{ format('dev-pr-{0}', github.event.issue.number || github.event.pull_request.number) }}
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: look at previus
-        env:
-          PREV: ${{ toJson(fromJson(steps.check-previous.outputs.data)) }}
-        shell: bash
-        run: echo $PREV
       - name: set previous deployment as inactive
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
@@ -43,9 +38,9 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: checkout to access composite action
         uses: actions/checkout@v2
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
       - name: delete from Kubernetes
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
         uses: ./.github/workflows/actions/kubernetes
         with:
           aws-region: ${{ secrets.AWS_REGION }}
@@ -57,7 +52,7 @@ jobs:
           image-tag: ${{ github.sha }}
           delete: true
       - name: delete pr deployment environment
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
         uses: octokit/request-action@v2.x
         with:
           route: DELETE /repos/:repository/environments/:environment
