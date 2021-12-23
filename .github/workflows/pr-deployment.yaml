@@ -51,7 +51,16 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           image-tag: ${{ github.sha }}
           delete: true
-      # delete old deployment from github on pr close
+      - name: delete pr deployment environment
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) == '[]' }}
+        uses: octokit/request-action@v2.x
+        with:
+          route: DELETE /repos/:repository/environments/:environment
+          repository: ${{ github.repository }}
+          environment: ${{ fromJson(steps.check-previous.outputs.data)[0].environment }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   deploy-check:
     needs: [evict-inactive]
     runs-on: ubuntu-latest
