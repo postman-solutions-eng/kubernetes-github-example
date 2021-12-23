@@ -51,6 +51,7 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           image-tag: ${{ github.sha }}
           delete: true
+      # delete old deployment from github on pr close
   deploy-check:
     needs: [evict-inactive]
     runs-on: ubuntu-latest
@@ -135,6 +136,7 @@ jobs:
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
   kubernetes:
     name: deploy to Kubernetes
+    id: deploy-to-kubernetes
     needs: [push]
     runs-on: ubuntu-latest
     steps:
