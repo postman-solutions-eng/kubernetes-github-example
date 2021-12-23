@@ -36,6 +36,9 @@ jobs:
           state: inactive
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: checkout to access composite action
+        uses: actions/checkout@v2
+        if: ${{ fromJson(steps.check-previous.outputs.data)[0] }}
       - name: delete from Kubernetes
         if: ${{ fromJson(steps.check-previous.outputs.data)[0] }}
         uses: ./.github/workflows/actions/kubernetes
