@@ -75,7 +75,8 @@ runs:
         kubectl apply -f ./kube.yaml
         kubectl rollout status deployment/$APP
         export SVC_URL="$(kubectl get svc $APP -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
-        echo "::set-output name=url::$(echo $SVC_URL | base64)"
+        export ENCODED="$(echo $SVC_URL | base64)"
+        echo "::set-output name=url::$ENCODED"
     - name: remove from kubernetes
       if: ${{ inputs.delete == 'true' }}
       env:
