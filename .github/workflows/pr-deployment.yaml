@@ -16,6 +16,13 @@ jobs:
     outputs:
       ref: ${{ steps.get-ref-from-pr.outputs.ref || steps.get-ref-from-issue.outputs.ref }}
     steps:
+      - name: get ref from pr
+        id: get-ref-from-pr
+        if: github.event_name == 'pull_request'
+        env:
+          REF: ${{ github.head_ref }}
+        shell: bash
+        run: echo "::set-output name=ref::$REF"
       - name: get issue from comment
         id: get-issue
         if: github.event_name == 'issue_comment'
@@ -28,18 +35,11 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: get ref from pr issue
         id: get-ref-from-issue
-        if: success()
+        if: github.event_name == 'issue_comment'
         shell: bash
         env:
           REF: test
           #${{ fromJson(steps.get-issue.outputs.data).head.ref }}
-        run: echo "::set-output name=ref::$REF"
-      - name: get ref from pr
-        id: get-ref-from-pr
-        if: github.event_name == 'pull_request'
-        env:
-          REF: ${{ github.head_ref }}
-        shell: bash
         run: echo "::set-output name=ref::$REF"
 
   evict-inactive:
