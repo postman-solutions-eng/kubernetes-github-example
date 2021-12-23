@@ -15,6 +15,8 @@ jobs:
     name: evict previous deployment
     runs-on: ubuntu-latest
     steps:
+      - shell: bash
+        run: cat $GITHUB_ENV
       - name: check for previous deployment
         id: check-previous
         uses: octokit/request-action@v2.x
