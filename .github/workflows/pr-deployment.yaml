@@ -169,7 +169,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
-          environment_url: ${{ format('http://{0}', steps.set-env-url.env-url }}
+          environment_url: ${{ format('http://{0}', steps.set-env-url.env-url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:
