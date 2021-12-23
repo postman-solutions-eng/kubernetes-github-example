@@ -38,8 +38,7 @@ jobs:
         if: github.event_name == 'issue_comment'
         shell: bash
         env:
-          REF: test
-          #${{ fromJson(steps.get-issue.outputs.data).head.ref }}
+          REF: ${{ fromJson(steps.get-issue.outputs.data).head.ref }}
         run: echo "::set-output name=ref::$REF"
 
   evict-inactive:
