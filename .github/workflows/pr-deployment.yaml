@@ -138,9 +138,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deployment: ${{ needs.push.outputs.deployment }}
+      url: ${{ steps.deploy-to-kubernetes.url }}
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/workflows/actions/kubernetes
+        id: deploy-to-kubernetes
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
@@ -160,6 +162,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.kubernetes.outputs.deployment }}
+          environment_url: ${{ needs.kubernetes.outputs.url }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:

@@ -25,6 +25,9 @@ inputs:
     type: boolean
     required: false
     default: false
+outputs:
+  url:
+    value: ${{ steps.deploy-to-kubernetes.outputs.url }}
 runs:
   using: composite
   steps:
@@ -63,6 +66,7 @@ runs:
       run: |
         aws eks update-kubeconfig --name $AWS_EKS_CLUSTER
     - name: deploy to kubernetes
+      id: deploy-to-kubernetes
       if: ${{ inputs.delete == 'false' }}
       env:
         APP: ${{ inputs.app-name }}
@@ -70,7 +74,7 @@ runs:
       run: |
         kubectl apply -f ./kube.yaml
         kubectl rollout status deployment/$APP
-        echo "$(kubectl get svc $APP -o jsonpath='::debug::Deployed to: {.status.loadBalancer.ingress[0].hostname}')"
+        echo "$(kubectl get svc $APP -o jsonpath='::set-output name=url::{.status.loadBalancer.ingress[0].hostname}')"
     - name: remove from kubernetes
       if: ${{ inputs.delete == 'true' }}
       env:
