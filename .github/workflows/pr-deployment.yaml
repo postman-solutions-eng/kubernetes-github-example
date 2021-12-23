@@ -12,6 +12,8 @@ permissions:
   pull-requests: write
 jobs:
   evict-inactive:
+    name: evict previous deployment
+    runs-on: ubuntu-latest
     steps:
       - name: check for previous deployment
         id: check-previous
