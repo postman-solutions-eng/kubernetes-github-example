@@ -2,6 +2,8 @@ name: pr-deployment
 on:
   issue_comment:
     types: [created]
+  pull_request:
+    types: [closed]
 permissions:
   id-token: write
   contents: read
@@ -9,8 +11,33 @@ permissions:
   statuses: write
   pull-requests: write
 jobs:
+  evict-inactive:
+    steps:
+      - name: check for previous deployment
+        id: check-previous
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:repository/deployments
+          repository: ${{ github.repository }}
+          environment: ${{ format('dev-pr-{0}', github.event.pull_request.number) }}
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: set previous deployment as inactive
+        if: ${{ fromJson(steps.check-previous.outputs.data)[0] }}
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          environment: ${{ format('dev-pr-{0}', github.event.pull_request.number) }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: inactive
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   deploy-check:
+    needs: [evict-inactive]
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'issue_comment' && github.event.action == 'created' && github.event.issue.pull_request }}
     steps:
       - name: check if commenter has permission to deploy
         id: check_permissions
@@ -29,15 +56,6 @@ jobs:
         with:
           trigger: '/deploy'
           reaction: rocket
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: get pull request ref
-        id: get_pull_request_ref
-        uses: octokit/request-action@v2.x
-        with:
-          route: GET /repos/:repository/pulls/:issue_id
-          repository: ${{ github.repository }}
-          issue_id: ${{ github.event.issue.number }}
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
     outputs:
@@ -66,6 +84,7 @@ jobs:
           repository: ${{ github.repository }}
           ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
           environment: ${{ format('dev-pr-{0}', github.event.issue.number) }}
+          transient_environment: true
           auto_merge: false
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
