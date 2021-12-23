@@ -38,9 +38,9 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: checkout to access composite action
         uses: actions/checkout@v2
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
       - name: delete from Kubernetes
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
         uses: ./.github/workflows/actions/kubernetes
         with:
           aws-region: ${{ secrets.AWS_REGION }}
@@ -52,7 +52,7 @@ jobs:
           image-tag: ${{ github.sha }}
           delete: true
       - name: delete pr deployment environment
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' }}
+        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request'}}
         uses: octokit/request-action@v2.x
         with:
           route: DELETE /repos/:repository/environments/:environment
