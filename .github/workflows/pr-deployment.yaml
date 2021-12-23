@@ -21,7 +21,8 @@ jobs:
         with:
           route: GET /repos/:repository/deployments
           repository: ${{ github.repository }}
-          environment: ${{ format('dev-pr-{0}', github.event.issue.number || github.event.pull_request.number) }}
+          ref: ${{ github.ref }}
+          environment: development
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: set previous deployment as inactive
@@ -31,7 +32,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
-          environment: ${{ format('dev-pr-{0}', github.event.issue.number || github.event.pull_request.number) }}
+          environment: development
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: inactive
         env:
@@ -51,16 +52,6 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           image-tag: ${{ github.sha }}
           delete: true
-      - name: delete pr deployment environment
-        if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request'}}
-        uses: octokit/request-action@v2.x
-        with:
-          route: DELETE /repos/:repository/environments/:environment
-          repository: ${{ github.repository }}
-          environment: ${{ fromJson(steps.check-previous.outputs.data)[0].environment }}
-          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   deploy-check:
     needs: [evict-inactive]
     runs-on: ubuntu-latest
@@ -111,7 +102,7 @@ jobs:
           route: POST /repos/:repository/deployments
           repository: ${{ github.repository }}
           ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
-          environment: ${{ format('dev-pr-{0}', github.event.issue.number) }}
+          environment: development
           transient_environment: true
           auto_merge: false
         env:
@@ -166,7 +157,7 @@ jobs:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
           deployment: ${{ needs.push.outputs.deployment }}
-          environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
+          environment_url: development
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
         env:
