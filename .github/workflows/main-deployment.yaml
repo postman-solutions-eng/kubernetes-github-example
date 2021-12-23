@@ -95,7 +95,7 @@ jobs:
         env:
           ENCODED_URL: ${{ needs.kubernetes.outputs.url }}
         run: |
-          export DECODED=$(base64 -D $ENCODED_URL)
+          export DECODED=$(base64 -d $ENCODED_URL)
           echo "::set-output name=env-url::$DECODED"
       - name: set deployment status to success
         id: successful_deployment
