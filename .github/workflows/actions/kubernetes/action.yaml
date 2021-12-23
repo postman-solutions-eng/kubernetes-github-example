@@ -1,5 +1,4 @@
-name: deploy to kubernetes
-description: Deploys images to Kubernetes.
+name: manage resources in kubernetes
 inputs:
   aws-region:
     type: string
@@ -22,6 +21,10 @@ inputs:
   image-tag:
     type: string
     required: true
+  delete:
+    type: boolean
+    required: false
+    default: false
 runs:
   using: composite
   steps:
@@ -35,10 +38,9 @@ runs:
     - name: login to AWS ECR
       id: ecr-login
       uses: aws-actions/amazon-ecr-login@v1
-    - name: build resources, deploy to kubernetes
+    - name: build resources
       env:
         APP: ${{ inputs.app-name }}
-        AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}
         ECR_REPO: ${{ inputs.ecr-repo-name }}
         ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         IMAGE_TAG: ${{ inputs.image-tag }}
@@ -54,9 +56,25 @@ runs:
         cat ./kubernetes/service_patch.json
         echo "[Workflow] Generating Kubernetes resources with kustomize."
         kubectl kustomize ./kubernetes -o kube.yaml
-        echo "[Workflow] Getting kubeconfig data for $AWS_EKS_CLUSTER."
+    - name: get kubeconfig from eks
+      env:
+        AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}
+      shell: bash
+      run: |
         aws eks update-kubeconfig --name $AWS_EKS_CLUSTER
-        echo "[Workflow] Deploy Kubernetes resources"
+    - name: deploy to kubernetes
+      if: ${{ inputs.delete == 'false' }}
+      env:
+        APP: ${{ inputs.app-name }}
+      shell: bash
+      run: |
         kubectl apply -f ./kube.yaml
         kubectl rollout status deployment/$APP
-        kubectl get svc $APP -o jsonpath='::debug::Deployed to: {.status.loadBalancer.ingress[0].hostname}'
+        echo "$(kubectl get svc $APP -o jsonpath='::debug::Deployed to: {.status.loadBalancer.ingress[0].hostname}')"
+    - name: remove from kubernetes
+      if: ${{ inputs.delete == 'true' }}
+      env:
+        APP: ${{ inputs.app-name }}
+      shell: bash
+      run: |
+        kubectl delete -f ./kube.yaml
