@@ -39,7 +39,7 @@ jobs:
               "production_environment": true,
               "auto_merge": false,
               "environment": "production",
-              "required_contexts": ["test"]
+              "required_contexts": ["run tests"]
             }}', github.ref) }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
