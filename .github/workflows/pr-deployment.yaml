@@ -132,7 +132,6 @@ jobs:
         id: create_deployment
         uses: octokit/request-action@v2.x
         env:
-          REF: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
           REQUEST_BODY: |
             ${{ format('{{
               "ref": "{0}",

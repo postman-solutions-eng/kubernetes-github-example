@@ -31,17 +31,21 @@ jobs:
       - name: create deployment
         id: create_deployment
         uses: octokit/request-action@v2.x
+        env:
+          REQUEST_BODY: |
+            ${{ format('{{
+              "ref": "{0}",
+              "transient_environment": false,
+              "production_environment": true,
+              "auto_merge": false,
+              "environment": "production",
+              "required_contexts": ["test"]
+            }}', github.ref }}
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           route: POST /repos/:repository/deployments
           repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
-          environment: production
-          transient_environment: false
-          production_environment: true
-          auto_merge: false
-          required_contexts: '[]'
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          data: ${{ toJson(env.REQUEST_BODY) }}
       - name: set deployment status to in progress
         id: start_deployment
         uses: octokit/request-action@v2.x
