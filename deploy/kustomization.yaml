@@ -1,11 +1,9 @@
----
-# patches:
-#   - path: ./deployment_patch.json
-#     target:
-#       kind: Deployment
-#   - path: ./service_patch.json
-#     target:
-#       kind: Service
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+namespace: default
+commonLabels:
+  app: local-quotable
+namePrefix: local-
