@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kubernetes-github-example-quotable
+  name: quotable
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kubernetes-github-example-quotable
+      app: quotable
   template:
     metadata:
       labels:
-        app: kubernetes-github-example-quotable
+        app: quotable
     spec:
       containers:
         - name: quotable
-          image: se-github-example-quotable:latest
+          image: quotable:latest
           ports:
             - containerPort: 3000

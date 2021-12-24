@@ -53,12 +53,12 @@ runs:
         echo "[Workflow] Installing envsub CLI."
         npm install -g envsub
         echo "[Workflow] Patching resources."
-        envsub ./kubernetes/deployment_patch.json
-        cat ./kubernetes/deployment_patch.json
-        envsub ./kubernetes/service_patch.json
-        cat ./kubernetes/service_patch.json
+        envsub ./deploy/deployment_patch.json
+        cat ./deploy/deployment_patch.json
+        envsub ./deploy/service_patch.json
+        cat ./deploy/service_patch.json
         echo "[Workflow] Generating Kubernetes resources with kustomize."
-        kubectl kustomize ./kubernetes -o kube.yaml
+        kubectl kustomize ./deploy -o kube.yaml
     - name: get kubeconfig from eks
       env:
         AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}

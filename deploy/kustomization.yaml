@@ -1,0 +1,11 @@
+---
+# patches:
+#   - path: ./deployment_patch.json
+#     target:
+#       kind: Deployment
+#   - path: ./service_patch.json
+#     target:
+#       kind: Service
+resources:
+  - deployment.yaml
+  - service.yaml
