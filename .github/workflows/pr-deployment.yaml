@@ -35,11 +35,13 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: get ref from pr issue
         id: get-ref-from-issue
-        if: steps.get-issue.outputs.data
+        if: github.event_name == 'issue_comment'
         shell: bash
         env:
-          REF: ${{ fromJson(steps.get-issue.outputs.data).head.ref }}
-        run: echo "::set-output name=ref::$REF"
+          DATA: ${{ steps.get-issue.outputs.data }}
+        run: |
+          export REF=$(echo $DATA | jq '.head.ref')
+          echo "::set-output name=ref::$REF"
 
   evict-inactive:
     needs: [get-ref]
@@ -129,13 +131,20 @@ jobs:
       - name: create deployment
         id: create_deployment
         uses: octokit/request-action@v2.x
+        env:
+          REF: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
+          REQUEST_BODY: |
+            {
+              "ref": "$REF",
+              "transient_environment": true,
+              "auto_merge": false
+              "environment": "development"
+              "required_contexts": ["pr-test"]
+            }
         with:
           route: POST /repos/:repository/deployments
           repository: ${{ github.repository }}
-          ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
-          environment: development
-          transient_environment: true
-          auto_merge: false
+          body: ${{ toJson(env.REQUEST_BODY) }}
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: set deployment status to in progress
