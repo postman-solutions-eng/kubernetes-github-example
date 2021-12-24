@@ -137,8 +137,8 @@ jobs:
             ${{ format('{{
               "ref": "{0}",
               "transient_environment": true,
-              "auto_merge": false
-              "environment": "development"
+              "auto_merge": false,
+              "environment": "development",
               "required_contexts": ["pr-test"]
             }}', fromJson(steps.get_pull_request_ref.outputs.data).head.ref) }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
