@@ -134,7 +134,13 @@ jobs:
         env:
           REF: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
           REQUEST_BODY: |
-            ${{ format('{ "ref": "{0}", "transient_environment": true, "auto_merge": false "environment": "development" "required_contexts": ["pr-test"] }', fromJson(steps.get_pull_request_ref.outputs.data).head.ref) }}
+            ${{ format('{{
+              "ref": "{0}",
+              "transient_environment": true,
+              "auto_merge": false
+              "environment": "development"
+              "required_contexts": ["pr-test"]
+            }}', fromJson(steps.get_pull_request_ref.outputs.data).head.ref) }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           route: POST /repos/:repository/deployments
