@@ -24,6 +24,10 @@ inputs:
   name-suffix:
     type: string
     required: false
+  ref:
+    type: string
+    required: false
+    default: refs/heads/main
   delete:
     type: boolean
     required: false
@@ -34,6 +38,9 @@ outputs:
 runs:
   using: composite
   steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ inputs.ref }}
     - name: configure AWS credentials
       id: configure-aws
       uses: aws-actions/configure-aws-credentials@v1
