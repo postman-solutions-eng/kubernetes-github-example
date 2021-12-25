@@ -21,6 +21,9 @@ inputs:
   image-tag:
     type: string
     required: true
+  name-suffix:
+    type: string
+    required: false
   delete:
     type: boolean
     required: false
@@ -44,21 +47,22 @@ runs:
     - name: build resources
       env:
         APP: ${{ inputs.app-name }}
-        ECR_REPO: ${{ inputs.ecr-repo-name }}
-        ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-        IMAGE_TAG: ${{ inputs.image-tag }}
+        NAME_SUFFIX: ${{ inputs.name-suffix }}
+        IMAGE_REF: |
+          ${{
+              format(
+                '{0}/{1}:{2}',
+                inputs.ecr-repo-name,
+                steps.ecr-login.outputs.registry,
+                inputs.image-tag
+              )
+          }}
       shell: bash
       run: |
-        export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
-        echo "[Workflow] Installing envsub CLI."
-        npm install -g envsub
-        echo "[Workflow] Patching resources."
-        envsub ./deploy/deployment_patch.json
-        cat ./deploy/deployment_patch.json
-        envsub ./deploy/service_patch.json
-        cat ./deploy/service_patch.json
-        echo "[Workflow] Generating Kubernetes resources with kustomize."
-        kubectl kustomize ./deploy -o kube.yaml
+        kustomize edit set label app="$APP"
+        kustomize edit set image app-image="$IMAGE_REF"
+        [[ ! -z $NAME_SUFFIX ]] && kustomzie edit set namesuffix -- "$NAME_SUFFIX"
+        echo "MANIFESTS=$(kustomize ./manifests)" >> $GITHUB_ENV
     - name: get kubeconfig from eks
       env:
         AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}
@@ -72,8 +76,8 @@ runs:
         APP: ${{ inputs.app-name }}
       shell: bash
       run: |
-        kubectl apply -f ./kube.yaml
-        kubectl rollout status deployment/$APP
+        echo "$MANIFESTS" | kubectl apply -f
+        kubectl rollout status "deployment/$APP"
         export SVC_URL="$(kubectl get svc $APP -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
         echo "::set-output name=url::$SVC_URL"
     - name: remove from kubernetes
@@ -82,4 +86,4 @@ runs:
         APP: ${{ inputs.app-name }}
       shell: bash
       run: |
-        kubectl delete -f ./kube.yaml
+        echo "$MANIFESTS" | kubectl delete -f
