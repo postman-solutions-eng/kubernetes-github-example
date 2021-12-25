@@ -1,4 +1,3 @@
-name: pr-deployment
 on:
   issue_comment:
     types: [created]
