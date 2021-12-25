@@ -76,7 +76,7 @@ jobs:
         if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
       - name: delete from Kubernetes
         if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
-        uses: ./.github/workflows/actions/kubernetes
+        uses: ./.github/workflows/actions/kube-deploy
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
@@ -186,7 +186,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ needs.push.outputs.ref }}
-      - uses: ./.github/workflows/actions/kubernetes
+      - uses: ./.github/workflows/actions/kube-deploy
         id: deploy-to-kubernetes
         with:
           aws-region: ${{ secrets.AWS_REGION }}
