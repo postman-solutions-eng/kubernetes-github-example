@@ -70,7 +70,7 @@ runs:
         kustomize edit set label app="$APP"
         kustomize edit set image app-image="$IMAGE_REF"
         [[ ! -z $NAME_SUFFIX ]] && kustomzie edit set namesuffix -- "$NAME_SUFFIX"
-        echo "MANIFESTS=$(kustomize build)" >> $GITHUB_ENV
+        kustomize build -o ./_resolved.yaml
     - name: get kubeconfig from eks
       env:
         AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}
@@ -84,7 +84,7 @@ runs:
         APP: ${{ inputs.app-name }}
       shell: bash
       run: |
-        echo "$MANIFESTS" | kubectl apply -f
+        kubectl apply -f ./manifests/_resolved.yaml
         kubectl rollout status "deployment/$APP"
         export SVC_URL="$(kubectl get svc $APP -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
         echo "::set-output name=url::$SVC_URL"
