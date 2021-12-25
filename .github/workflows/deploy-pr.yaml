@@ -196,6 +196,7 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.issue.number) }}
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
+          ref: ${{ needs.push.outputs.ref }}
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x
