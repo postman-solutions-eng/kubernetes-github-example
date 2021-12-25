@@ -5,9 +5,9 @@ resources:
   - service.yaml
 namespace: default
 commonLabels:
-  app: local-quotable # value is set in the CI/CD pipeline
-namePrefix: local- # value is set in the CI/CD pipeline
+  app: quotable-local
 images:
   - name: app-image
-    newName: local-quotable # value is set in the CI/CD pipeline
-    newTag: latest # value is set in the CI/CD pipeline
+    newName: quotable-local
+    newTag: latest
+nameSuffix: -local

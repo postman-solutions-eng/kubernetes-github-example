@@ -172,6 +172,7 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           build-target: app
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
+          name-suffix: ${{ format('dev-pr-{0}', github.event.issue.number) }}
   kubernetes:
     name: deploy to Kubernetes
     needs: [push]
