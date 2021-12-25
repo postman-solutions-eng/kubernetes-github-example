@@ -72,6 +72,7 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - name: checkout to access composite action
         uses: actions/checkout@v2
+        ref: ${{ needs.get-ref.outputs.ref }}
         if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
       - name: delete from Kubernetes
         if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
@@ -117,6 +118,7 @@ jobs:
     needs: [deploy-check]
     outputs:
       deployment: ${{ fromJson(steps.create_deployment.outputs.data).id }}
+      ref: ${{ fromJson(steps.get_pull_request_ref.outputs.data).head.ref }}
     if: needs.deploy-check.outputs.triggered == 'true'
     steps:
       - name: get pull request ref
@@ -162,8 +164,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deployment: ${{ needs.setup-deployment.outputs.deployment }}
+      ref: ${{ needs.setup-deployment.outputs.ref }}
     steps:
       - uses: actions/checkout@v2
+        ref: ${{ needs.setup-deployment.outputs.ref }}
       - uses: ./.github/workflows/actions/ecr-push
         with:
           aws-region: ${{ secrets.AWS_REGION }}
@@ -179,6 +183,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        ref: ${{ needs.push.outputs.ref }}
       - uses: ./.github/workflows/actions/kubernetes
         id: deploy-to-kubernetes
         with:
