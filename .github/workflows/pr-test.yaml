@@ -1,20 +1,19 @@
-name: pr-test
+name: test
 on:
   push:
     branches-ignore: [main]
   pull_request:
+  workflow_dispatch:
 env:
   DOCKER_BUILDKIT: 1
   BUILDKIT_INLINE_CACHE: 1
 permissions:
-  id-token: write
   contents: read
 jobs:
-  pr-test:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: run functional tests
-        run: npm run container-test-functional
-      - name: run e2e tests
-        run: npm run container-test-e2e
+        shell: bash
+        run: make test
