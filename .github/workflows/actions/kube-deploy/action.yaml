@@ -70,7 +70,7 @@ runs:
         kustomize edit set label app="$APP"
         kustomize edit set image app-image="$IMAGE_REF"
         [[ ! -z $NAME_SUFFIX ]] && kustomzie edit set namesuffix -- "$NAME_SUFFIX"
-        echo "MANIFESTS=$(kustomize ./manifests)" >> $GITHUB_ENV
+        echo "MANIFESTS=$(kustomize build)" >> $GITHUB_ENV
     - name: get kubeconfig from eks
       env:
         AWS_EKS_CLUSTER: ${{ inputs.aws-eks-cluster }}
