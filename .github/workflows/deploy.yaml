@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: deploy-to-kubernetes
-        uses: ./.github/workflows/actions/kubernetes
+        uses: ./.github/workflows/actions/kube-deploy
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
