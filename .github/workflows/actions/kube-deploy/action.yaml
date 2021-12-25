@@ -57,12 +57,10 @@ runs:
         NAME_SUFFIX: ${{ inputs.name-suffix }}
         IMAGE_REF: |
           ${{
-              format(
-                '{0}/{1}:{2}',
+              format('{0}/{1}:{2}',
                 steps.ecr-login.outputs.registry,
                 inputs.ecr-repo-name,
-                inputs.image-tag
-              )
+                inputs.image-tag)
           }}
       shell: bash
       run: |

@@ -3,3 +3,11 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+namespace: default
+commonLabels:
+  app: quotable-local
+images:
+  - name: app-image
+    newName: quotable-local
+    newTag: latest
+nameSuffix: -local
