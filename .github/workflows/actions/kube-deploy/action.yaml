@@ -94,4 +94,4 @@ runs:
         APP: ${{ inputs.app-name }}
       shell: bash
       run: |
-        echo "$MANIFESTS" | kubectl delete -f
+        kubectl delete -f ./manifests/_resolved.yaml
