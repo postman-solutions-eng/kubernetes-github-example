@@ -14,6 +14,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: run functional tests
-        shell: bash
+      - shell: bash
         run: make test
