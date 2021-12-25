@@ -67,7 +67,7 @@ runs:
       shell: bash
       run: |
         cd ./manifests
-        kustomize edit set label app="$APP"
+        kustomize edit set label "app:$APP"
         kustomize edit set image app-image="$IMAGE_REF"
         [[ ! -z $NAME_SUFFIX ]] && kustomzie edit set namesuffix -- "$NAME_SUFFIX"
         kustomize build -o ./_resolved.yaml
