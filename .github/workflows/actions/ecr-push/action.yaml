@@ -56,5 +56,5 @@ runs:
         FULL_IMAGE_SHA="$ECR_REGISTRY/$ECR_REPO:$SHA"
         docker build --target="$BUILD_TARGET" --tag="$FULL_IMAGE" --tag="$FULL_IMAGE_SHA" . && \
         IMAGE_DIGEST=$(docker image inspect "$FULL_IMAGE" -f '{{.Id}}')
-        docker push --all-tags "$FULL_IMAGE"
+        docker push --all-tags "$ECR_REGISTRY/$ECR_REPO"
         echo "::set-output name=image-digest::$IMAGE_DIGEST"
