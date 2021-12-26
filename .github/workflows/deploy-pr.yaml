@@ -82,9 +82,10 @@ jobs:
           aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
           aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
-          app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.issue.number) }}
+          app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.number) }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           image-tag: ${{ github.sha }}
+          name-suffix: ${{ format('-dev-pr-{0}', github.event.number) }}
           delete: true
   deploy-check:
     needs: [evict-inactive]
