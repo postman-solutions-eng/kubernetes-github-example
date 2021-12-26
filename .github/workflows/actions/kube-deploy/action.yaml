@@ -32,7 +32,7 @@ runs:
       env:
         APP: ${{ inputs.app-name }}
         NAME_SUFFIX: ${{ inputs.name-suffix }}
-        IMAGE_REF: ${{ format('{0}/{1}@{2}', steps.ecr-login.outputs.registry, inputs.ecr-repo-name, inputs.image-tag, inputs.image-digest) }}
+        IMAGE_REF: ${{ format('{0}/{1}@{2}', steps.ecr-login.outputs.registry, inputs.ecr-repo-name, inputs.image-digest) }}
       shell: bash
       run: |
         cd ./manifests
