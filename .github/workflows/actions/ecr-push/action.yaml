@@ -20,13 +20,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: configure AWS credentials
-      id: configure-aws
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-region: ${{ inputs.aws-region }}
-        role-to-assume: ${{ inputs.aws-role-to-assume }}
-        role-duration-seconds: ${{ inputs.aws-role-duration-seconds }}
     - name: login to AWS ECR
       id: ecr-login
       uses: aws-actions/amazon-ecr-login@v1
