@@ -29,7 +29,7 @@ runs:
       env:
         APP: ${{ inputs.app-name }}
         NAME_SUFFIX: ${{ inputs.name-suffix }}
-        IMAGE_REF: $ {{ inputs.image-ref }}
+        IMAGE_REF: ${{ inputs.image-ref }}
       shell: bash
       run: |
         cd ./manifests
