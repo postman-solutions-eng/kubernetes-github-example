@@ -1,15 +1,6 @@
 name: push image to ECR
 description: Builds and pushes an image to ECR.
 inputs:
-  aws-region:
-    type: string
-    required: true
-  aws-role-to-assume:
-    type: string
-    required: true
-  aws-role-duration-seconds:
-    type: string
-    required: true
   ecr-repo-name:
     type: string
     required: true
