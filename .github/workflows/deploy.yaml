@@ -58,14 +58,22 @@ jobs:
     needs: [setup-deployment]
     outputs:
       deployment: ${{ needs.setup-deployment.outputs.deployment }}
+      image-digest: ${{ steps.ecr-push.outputs.image-digest }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: ./.github/workflows/actions/ecr-push
+        with:
+          sha: ${{ github.sha }}
+      - name: configure AWS credentials
+        id: configure-aws
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ secrets.AWS_REGION }}
-          aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-          aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
+      - uses: ./.github/workflows/actions/ecr-push
+        id: ecr-push
+        with:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           build-target: app
           image-tag: production
@@ -76,16 +84,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          sha: ${{ github.sha }}
+      - name: configure AWS credentials
+        id: configure-aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
       - id: deploy-to-kubernetes
         uses: ./.github/workflows/actions/kube-deploy
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          aws-role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-          aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ secrets.APP }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
-          sha: ${{ github.sha }}
           image-digest: ${{ needs.push.outputs.image-digest }}
       - name: set deployment status to success
         id: successful_deployment
