@@ -61,7 +61,7 @@ runs:
         cd ./manifests
         kustomize edit set label "app:$APP"
         kustomize edit set image app-image="$IMAGE_REF"
-        [[ ! -z $NAME_SUFFIX ]] && kustomzie edit set namesuffix -- "$NAME_SUFFIX"
+        [[ ! -z $NAME_SUFFIX ]] && kustomize edit set namesuffix -- "$NAME_SUFFIX"
         kustomize build -o "$RUNNER_TEMP/_resolved.yaml"
     - name: get kubeconfig from eks
       env:
