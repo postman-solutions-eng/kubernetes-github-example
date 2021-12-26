@@ -32,6 +32,7 @@ runs:
         IMAGE_REF: ${{ inputs.image-ref }}
       shell: bash
       run: |
+        IMAGE_REF="$(echo $IMAGE_REF | base64 -d)"
         cd ./manifests
         kustomize edit set label "app:$APP"
         kustomize edit set image app-image="$IMAGE_REF"

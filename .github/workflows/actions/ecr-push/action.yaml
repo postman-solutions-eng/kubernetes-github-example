@@ -41,4 +41,4 @@ runs:
         docker build --target="$BUILD_TARGET" --tag="$FULL_IMAGE" --tag="$FULL_IMAGE_SHA" . && \
         docker push --all-tags "$ECR_REGISTRY/$ECR_REPO" && \
         IMAGE_REF=$(docker image inspect "$FULL_IMAGE" -f '{{range .RepoDigests}}{{.}}{{end}}' | grep "$ECR_REGISTRY/$ECR_REPO") && \
-        echo "::set-output name=image-ref::$IMAGE_REF"
+        echo "::set-output name=image-ref::$(echo $IMAGE_REF | base64)"
