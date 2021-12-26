@@ -16,10 +16,16 @@ inputs:
   image-tag:
     type: string
     required: true
+  sha:
+    type: string
+    required: true
   build-target:
     type: string
     required: false
     default: app
+outputs:
+  image-digest:
+    value: ${{ steps.push-image.image-digest }}
 runs:
   using: composite
   steps:
@@ -40,11 +46,15 @@ runs:
         ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         IMAGE_TAG: ${{ inputs.image-tag }}
         BUILD_TARGET: ${{ inputs.build-target }}
+        SHA: ${{ inputs.sha }}
         DOCKER_BUILDKIT: 1
         BUILDKIT_INLINE_CACHE: 1
       shell: bash
       run: |
         aws ecr create-repository --repository-name=$ECR_REPO 2>&1 | grep -v RepositoryAlreadyExistsException || true
-        export FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
-        docker build --target="$BUILD_TARGET" --tag="$FULL_IMAGE" . && \
-        docker push "$FULL_IMAGE"
+        FULL_IMAGE="$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG"
+        FULL_IMAGE_SHA="$ECR_REGISTRY/$ECR_REPO:$SHA"
+        docker build --target="$BUILD_TARGET" --tag="$FULL_IMAGE" --tag="$FULL_IMAGE_SHA" . && \
+        IMAGE_DIGEST=$(docker image inspect "$FULL_IMAGE" -f '{{.Id}}')
+        docker push --all-tags "$FULL_IMAGE"
+        echo "::set-output name=image-digest::$IMAGE_DIGEST"

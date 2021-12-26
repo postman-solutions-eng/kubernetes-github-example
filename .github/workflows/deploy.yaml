@@ -68,7 +68,8 @@ jobs:
           aws-role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           build-target: app
-          image-tag: ${{ github.sha }}
+          image-tag: production
+          sha: ${{ github.sha }}
   kubernetes:
     name: deploy to Kubernetes
     needs: [push]
@@ -84,7 +85,8 @@ jobs:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ secrets.APP }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
-          image-tag: ${{ github.sha }}
+          sha: ${{ github.sha }}
+          image-digest: ${{ needs.push.outputs.image-digest }}
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x

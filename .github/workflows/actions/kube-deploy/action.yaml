@@ -18,16 +18,15 @@ inputs:
   ecr-repo-name:
     type: string
     required: true
-  image-tag:
-    type: string
-    required: true
   name-suffix:
     type: string
     required: false
-  ref:
+  sha:
+    type: string
+    required: true
+  image-digest: # empty on delete
     type: string
     required: false
-    default: refs/heads/main
   delete:
     type: boolean
     required: false
@@ -40,7 +39,7 @@ runs:
   steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ inputs.ref }}
+        sha: ${{ inputs.sha }}
     - name: configure AWS credentials
       id: configure-aws
       uses: aws-actions/configure-aws-credentials@v1
@@ -55,7 +54,7 @@ runs:
       env:
         APP: ${{ inputs.app-name }}
         NAME_SUFFIX: ${{ inputs.name-suffix }}
-        IMAGE_REF: ${{ format('{0}/{1}:{2}', steps.ecr-login.outputs.registry, inputs.ecr-repo-name, inputs.image-tag) }}
+        IMAGE_REF: ${{ format('{0}/{1}@{2}', steps.ecr-login.outputs.registry, inputs.ecr-repo-name, inputs.image-tag, inputs.image-digest) }}
       shell: bash
       run: |
         cd ./manifests
