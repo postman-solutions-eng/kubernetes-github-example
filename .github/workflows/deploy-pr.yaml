@@ -170,7 +170,7 @@ jobs:
     outputs:
       deployment: ${{ needs.setup-deployment.outputs.deployment }}
       sha: ${{ needs.setup-deployment.outputs.sha }}
-      image-digest: ${{ steps.ecr-push.outputs.image-digest }}
+      image-ref: ${{ steps.ecr-push.outputs.image-ref }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -214,7 +214,7 @@ jobs:
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.issue.number) }}
           sha: ${{ needs.push.outputs.sha }}
-          image-digest: ${{ needs.push.outputs.image-digest }}
+          image-ref: ${{ needs.push.outputs.image-ref }}
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x

@@ -15,8 +15,8 @@ inputs:
     required: false
     default: app
 outputs:
-  image-digest:
-    value: ${{ steps.push-image.outputs.image-digest }}
+  image-ref:
+    value: ${{ steps.push-image.outputs.image-ref }}
 runs:
   using: composite
   steps:
@@ -40,5 +40,5 @@ runs:
         FULL_IMAGE_SHA="$ECR_REGISTRY/$ECR_REPO:$SHA"
         docker build --target="$BUILD_TARGET" --tag="$FULL_IMAGE" --tag="$FULL_IMAGE_SHA" . && \
         docker push --all-tags "$ECR_REGISTRY/$ECR_REPO" && \
-        IMAGE_DIGEST=$(docker image inspect "$FULL_IMAGE" -f '{{.Id}}') && \
-        echo "::set-output name=image-digest::$IMAGE_DIGEST"
+        IMAGE_REF=$(docker image inspect "$FULL_IMAGE" -f '{{range .RepoDigests}}{{.}}{{end}}' | grep "$ECR_REGISTRY/$ECR_REPO") && \
+        echo "::set-output name=image-ref::$IMAGE_REF"

@@ -58,7 +58,7 @@ jobs:
     needs: [setup-deployment]
     outputs:
       deployment: ${{ needs.setup-deployment.outputs.deployment }}
-      image-digest: ${{ steps.ecr-push.outputs.image-digest }}
+      image-ref: ${{ steps.ecr-push.outputs.image-ref }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -99,7 +99,7 @@ jobs:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ secrets.APP }}
           ecr-repo-name: ${{ secrets.ECR_REPO }}
-          image-digest: ${{ needs.push.outputs.image-digest }}
+          image-ref: ${{ needs.push.outputs.image-ref }}
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x

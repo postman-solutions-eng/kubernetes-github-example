@@ -6,13 +6,10 @@ inputs:
   app-name:
     type: string
     required: true
-  ecr-repo-name:
-    type: string
-    required: true
   name-suffix:
     type: string
     required: false
-  image-digest: # empty on delete
+  image-ref: # empty on delete
     type: string
     required: false
   delete:
@@ -32,7 +29,7 @@ runs:
       env:
         APP: ${{ inputs.app-name }}
         NAME_SUFFIX: ${{ inputs.name-suffix }}
-        IMAGE_REF: ${{ format('{0}/{1}@{2}', steps.ecr-login.outputs.registry, inputs.ecr-repo-name, inputs.image-digest) }}
+        IMAGE_REF: $ {{ inputs.image-ref }}
       shell: bash
       run: |
         cd ./manifests
