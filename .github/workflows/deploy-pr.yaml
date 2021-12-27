@@ -18,7 +18,7 @@ jobs:
         id: get-sha-from-pr
         if: github.event_name == 'pull_request'
         env:
-          SHA: ${{ github.sha }} # this is the merge_commit_sha on event
+          SHA: ${{ github.event.pull_request.head.sha }}
         shell: bash
         run: echo "::set-output name=sha::$SHA"
       - name: get issue from comment
@@ -38,7 +38,7 @@ jobs:
         env:
           DATA: ${{ steps.get-issue.outputs.data }}
         run: |
-          export SHA=$(echo $DATA | jq '.merge_commit_sha')
+          export SHA=$(echo $DATA | jq '.head.sha')
           echo "::set-output name=sha::$SHA"
       - name: get final sha
         id: get-final-sha
