@@ -140,7 +140,7 @@ jobs:
         env:
           REQUEST_BODY: |
             ${{ format('{{
-              "sha": "{0}",
+              "ref": "{0}",
               "transient_environment": true,
               "auto_merge": false,
               "environment": "development",
