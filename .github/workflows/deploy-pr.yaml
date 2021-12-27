@@ -10,10 +10,10 @@ permissions:
   statuses: write
   pull-requests: write
 jobs:
-  get-sha:
+  evict-inactive:
+    needs: [get-sha]
+    name: evict previous deployment
     runs-on: ubuntu-latest
-    outputs:
-      sha: ${{ steps.get-sha-from-pr.outputs.sha || steps.get-sha-from-issue.outputs.sha }}
     steps:
       - name: get sha from pr
         id: get-sha-from-pr
@@ -41,19 +41,19 @@ jobs:
         run: |
           export SHA=$(echo $DATA | jq '.head.sha')
           echo "::set-output name=sha::$SHA"
-
-  evict-inactive:
-    needs: [get-sha]
-    name: evict previous deployment
-    runs-on: ubuntu-latest
-    steps:
+      - name: get final sha
+        id: get-final-sha
+        env:
+          SHA: ${{ steps.get-sha-from-pr.outputs.sha || steps.get-sha-from-issue.outputs.sha }}
+        shell: bash
+        run: echo "::set-output name=sha::$SHA"
       - name: check for previous deployment
         id: check-previous
         uses: octokit/request-action@v2.x
         with:
           route: GET /repos/:repository/deployments
           repository: ${{ github.repository }}
-          sha: ${{ needs.get-sha.outputs.sha }}
+          sha: ${{ steps.get-final-sha.outputs.sha }}
           environment: development
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -72,7 +72,7 @@ jobs:
       - name: checkout to access composite action
         uses: actions/checkout@v2
         with:
-          sha: ${{ needs.get-sha.outputs.sha }}
+          sha: ${{ steps.get-final-sha.outputs.sha }}
         if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
       - name: configure AWS credentials
         id: configure-aws
@@ -163,14 +163,10 @@ jobs:
           state: in_progress
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-  push:
+  push-and-deploy:
     name: build and push image to ECR
     needs: [setup-deployment]
     runs-on: ubuntu-latest
-    outputs:
-      deployment: ${{ needs.setup-deployment.outputs.deployment }}
-      sha: ${{ needs.setup-deployment.outputs.sha }}
-      image-ref: ${{ steps.ecr-push.outputs.image-ref }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -190,21 +186,6 @@ jobs:
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
           sha: ${{ needs.setup-deployment.outputs.sha }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.issue.number) }}
-  kubernetes:
-    name: deploy to Kubernetes
-    needs: [push]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          sha: ${{ needs.push.outputs.sha }}
-      - name: configure AWS credentials
-        id: configure-aws
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-          role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
       - uses: ./.github/workflows/actions/kube-deploy
         id: deploy-to-kubernetes
         with:
@@ -213,15 +194,15 @@ jobs:
           app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.issue.number) }}
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.issue.number) }}
-          sha: ${{ needs.push.outputs.sha }}
-          image-ref: ${{ needs.push.outputs.image-ref }}
+          sha: ${{ needs.setup-deployment.outputs.sha }}
+          image-ref: ${{ steps.ecr-push.outputs.image-ref }}
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ needs.push.outputs.deployment }}
+          deployment: ${{ needs.setup-deployment.outputs.deployment }}
           environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
@@ -234,7 +215,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ needs.push.outputs.deployment }}
+          deployment: ${{ needs.setup-deployment.outputs.deployment }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:

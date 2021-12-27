@@ -18,7 +18,6 @@ jobs:
       - shell: bash
         run: make test
   deploy:
-    name: prepare deployment
     runs-on: ubuntu-latest
     needs: [test]
     steps:
