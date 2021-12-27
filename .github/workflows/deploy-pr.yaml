@@ -94,9 +94,7 @@ jobs:
         with:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.number) }}
-          ecr-repo-name: ${{ secrets.ECR_REPO }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.number) }}
-          sha: ${{ github.event.pull_request.head.sha }}
           delete: true
   deploy-check:
     needs: [evict-inactive]
@@ -196,11 +194,8 @@ jobs:
         id: deploy-to-kubernetes
         with:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
-          ecr-repo-name: ${{ secrets.ECR_REPO }}
           app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.issue.number) }}
-          image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.issue.number) }}
-          sha: ${{ needs.setup-deployment.outputs.sha }}
           image-ref: ${{ steps.ecr-push.outputs.image-ref }}
       - name: set deployment status to success
         id: successful_deployment

@@ -6,7 +6,7 @@ inputs:
   app-name:
     type: string
     required: true
-  name-suffix:
+  name-suffix: # empty on production/main
     type: string
     required: false
   image-ref: # empty on delete

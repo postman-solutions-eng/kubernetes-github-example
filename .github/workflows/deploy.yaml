@@ -72,7 +72,6 @@ jobs:
         with:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ secrets.APP }}
-          ecr-repo-name: ${{ secrets.ECR_REPO }}
           image-ref: ${{ steps.ecr-push.outputs.image-ref }}
       - name: set deployment status to success
         id: successful_deployment
