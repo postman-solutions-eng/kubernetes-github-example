@@ -11,7 +11,6 @@ permissions:
   pull-requests: write
 jobs:
   evict-inactive:
-    needs: [get-sha]
     name: evict previous deployment
     runs-on: ubuntu-latest
     steps:
