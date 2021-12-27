@@ -163,7 +163,6 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   push-and-deploy:
-    name: build and push image to ECR
     needs: [setup-deployment]
     runs-on: ubuntu-latest
     steps:
