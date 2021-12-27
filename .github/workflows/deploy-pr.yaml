@@ -52,7 +52,7 @@ jobs:
         with:
           route: GET /repos/:repository/deployments
           repository: ${{ github.repository }}
-          ref: ${{ steps.get-final-sha.outputs.sha }}
+          sha: ${{ steps.get-final-sha.outputs.sha }}
           environment: development
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -145,7 +145,7 @@ jobs:
               "auto_merge": false,
               "environment": "development",
               "required_contexts": ["test"]
-            }}', fromJson(steps.get_pull_request.outputs.data).head.sha) }}
+            }}', fromJson(steps.get_pull_request.outputs.data).head.ref) }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           route: POST /repos/:repository/deployments
