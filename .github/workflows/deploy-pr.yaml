@@ -52,7 +52,7 @@ jobs:
         with:
           route: GET /repos/:repository/deployments
           repository: ${{ github.repository }}
-          sha: ${{ steps.get-final-sha.outputs.sha }}
+          ref: ${{ steps.get-final-sha.outputs.sha }}
           environment: development
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
