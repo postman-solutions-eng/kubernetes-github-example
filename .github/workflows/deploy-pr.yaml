@@ -79,7 +79,7 @@ jobs:
       - name: checkout to access composite action
         uses: actions/checkout@v2
         with:
-          sha: ${{ steps.get-final-data.outputs.sha }}
+          ref: ${{ steps.get-final-data.outputs.sha }}
         if: ${{ toJson(fromJson(steps.check-previous.outputs.data)) != '[]' && github.event_name == 'pull_request' }}
       - name: configure AWS credentials
         id: configure-aws
@@ -174,7 +174,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          sha: ${{ needs.setup-deployment.outputs.sha }}
+          ref: ${{ needs.setup-deployment.outputs.sha }}
       - name: configure AWS credentials
         id: configure-aws
         uses: aws-actions/configure-aws-credentials@v1

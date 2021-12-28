@@ -51,8 +51,6 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - uses: actions/checkout@v2
-        with:
-          sha: ${{ github.sha }}
       - name: configure AWS credentials
         id: configure-aws
         uses: aws-actions/configure-aws-credentials@v1
