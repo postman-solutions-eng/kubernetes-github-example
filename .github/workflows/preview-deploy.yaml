@@ -31,6 +31,14 @@ jobs:
           reaction: rocket
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+<<<<<<< HEAD
+=======
+      - name: debug
+        env:
+          HAS: fromJSON(steps.check_permissions.outputs.data).permissions.push == true
+        shell: bash
+        run: echo "has permission $HAS"
+>>>>>>> 95f7308 (Trying to debug permission check.)
   deploy:
     needs: [check-permissions]
     if: |
