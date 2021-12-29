@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has-permission: |
-        ${{ contains(['admin', 'write'], fromJson(steps.check-permissions.outputs.data).permission) }}
+        ${{ contains(toJson("['admin', 'write']"), fromJson(steps.check-permissions.outputs.data).permission) }}
       triggered: ${{ steps.ack.outputs.triggered }}
     steps:
       - name: check if commenter has permission to deploy
