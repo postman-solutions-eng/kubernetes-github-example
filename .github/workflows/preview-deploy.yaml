@@ -84,8 +84,7 @@ jobs:
         id: create-deployment
         uses: octokit/request-action@v2.x
         if: |
-          steps.check-previous.outputs.status != '404' &&
-            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
+          steps.check-previous.outputs.status != '404'
         env:
           REQUEST_BODY: |
             ${{ format('{{
@@ -103,8 +102,7 @@ jobs:
       - name: set deployment status to in progress
         uses: octokit/request-action@v2.x
         if: |
-          steps.check-previous.outputs.status != '404' &&
-            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
+          steps.check-previous.outputs.status != '404'
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
@@ -142,12 +140,11 @@ jobs:
         uses: octokit/request-action@v2.x
         if: |
           success() && 
-            steps.check-previous.outputs.status != '404' &&
-            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
+            steps.check-previous.outputs.status != '404'
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJSON(steps.check-previous.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.create-deployment.outputs.data)[0].id }}
           environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
@@ -157,12 +154,11 @@ jobs:
         uses: octokit/request-action@v2.x
         if: |
           failure() && 
-            steps.check-previous.outputs.status != '404' &&
-            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
+            steps.check-previous.outputs.status != '404'
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJSON(steps.check-previous.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.create-deployment.outputs.data)[0].id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:
