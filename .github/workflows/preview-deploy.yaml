@@ -7,14 +7,13 @@ permissions:
   deployments: write
   statuses: write
   pull-requests: write
-env:
-  PERMISSIONS: '["admin", "write"]'
 jobs:
   check-permissions:
     runs-on: ubuntu-latest
     outputs:
       has-permission: |
-        ${{ contains(fromJSON(env.PERMISSIONS), fromJSON(steps.check-permissions.outputs.data).permission) }}
+        ${{ fromJSON(steps.check-permissions.outputs.data).permission ==  'admin' ||
+          fromJSON(steps.check-permissions.outputs.data).permission == 'write' }}
       triggered: ${{ steps.ack.outputs.triggered }}
     steps:
       - name: check if commenter has permission to deploy
