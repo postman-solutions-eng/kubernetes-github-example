@@ -2,7 +2,6 @@ on:
   push:
     branches-ignore: [main]
   pull_request:
-  workflow_dispatch:
 env:
   DOCKER_BUILDKIT: 1
   BUILDKIT_INLINE_CACHE: 1

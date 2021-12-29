@@ -1,0 +1,84 @@
+on:
+  pull_request:
+    types: [closed]
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+  statuses: write
+  pull-requests: write
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check for previous deployment
+        id: check-previous
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/:repository/deployments
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.head.ref  }}
+          environment: development
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: set previous deployment as inactive
+        if: |
+          steps.check-previous.outputs.status != '404' &&
+            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          environment: development
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: inactive
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
+      - name: delete from Kubernetes
+        uses: ./.github/actions/kubernetes
+        with:
+          aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
+          app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.number) }}
+          name-suffix: ${{ format('-dev-pr-{0}', github.event.number) }}
+          delete: true
+      - name: set deployment status to success
+        id: successful_deployment
+        uses: octokit/request-action@v2.x
+        if: |
+          success() && 
+            steps.check-previous.outputs.status != '404' && 
+            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: success
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      - name: set deployment status to failure
+        id: failed_deployment
+        uses: octokit/request-action@v2.x
+        if: |
+          failure() && 
+            steps.check-previous.outputs.status != '404' && 
+            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+        with:
+          route: POST /repos/:repository/deployments/:deployment/statuses
+          repository: ${{ github.repository }}
+          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          state: failure
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'

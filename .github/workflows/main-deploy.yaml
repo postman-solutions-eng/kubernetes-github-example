@@ -1,7 +1,6 @@
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 permissions:
   id-token: write
   contents: read
@@ -58,19 +57,19 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
           role-duration-seconds: ${{ secrets.AWS_SESSION_DURATION }}
-      - uses: ./.github/workflows/actions/ecr-push
-        id: ecr-push
+      - uses: ./.github/actions/aws-ecr
+        id: aws-ecr
         with:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           build-target: app
           image-tag: production
           sha: ${{ github.sha }}
       - id: deploy-to-kubernetes
-        uses: ./.github/workflows/actions/kube-deploy
+        uses: ./.github/actions/kubernetes
         with:
           aws-eks-cluster: ${{ secrets.AWS_EKS_CLUSTER }}
           app-name: ${{ secrets.APP }}
-          image-ref: ${{ steps.ecr-push.outputs.image-ref }}
+          image-ref: ${{ steps.aws-ecr.outputs.image-ref }}
       - name: set deployment status to success
         id: successful_deployment
         uses: octokit/request-action@v2.x
