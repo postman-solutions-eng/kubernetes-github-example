@@ -11,9 +11,7 @@ jobs:
   check-permissions:
     runs-on: ubuntu-latest
     outputs:
-      has-permission: |
-        ${{ fromJSON(steps.check-permissions.outputs.data).permission ==  'admin' ||
-          fromJSON(steps.check-permissions.outputs.data).permission == 'write' }}
+      has-permission: ${{ toJSON(fromJSON(steps.check-permissions.outputs.data).permissions.push) }}
       triggered: ${{ steps.ack.outputs.triggered }}
     steps:
       - name: check if commenter has permission to deploy
@@ -36,7 +34,7 @@ jobs:
   deploy:
     needs: [check-permissions]
     if: |
-      needs.check-permissions.outputs.has-permission == 'true' && 
+      needs.check-permissions.outputs.has-permission == 'true' &&
         needs.check-permissions.outputs.triggered == 'true'
     runs-on: ubuntu-latest
     steps:
