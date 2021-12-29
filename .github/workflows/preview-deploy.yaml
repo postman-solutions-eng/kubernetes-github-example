@@ -11,7 +11,7 @@ jobs:
   check-permissions:
     runs-on: ubuntu-latest
     outputs:
-      has-permission: ${{ toJSON(fromJSON(steps.check-permissions.outputs.data).permissions.push) }}
+      collaborator: ${{ steps.check-permissions.outputs.data }}
       triggered: ${{ steps.ack.outputs.triggered }}
     steps:
       - name: check if commenter has permission to deploy
@@ -31,19 +31,10 @@ jobs:
           reaction: rocket
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: debug
-        env:
-          FULL: ${{ steps.check-permissions.data }}
-          HAS: ${{ fromJSON(steps.check-permissions.outputs.data).permissions.push == true }}
-        shell: bash
-        run: |
-          echo "has permission $HAS"
-          echo "$FULL"
-
   deploy:
     needs: [check-permissions]
     if: |
-      needs.check-permissions.outputs.has-permission == 'true' &&
+      fromJSON(needs.check-permissions.outputs.collaborator).user.permissions.push == true &&
         needs.check-permissions.outputs.triggered == 'true'
     runs-on: ubuntu-latest
     steps:
