@@ -144,7 +144,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJSON(steps.create-deployment.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.create-deployment.outputs.data).id }}
           environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
@@ -158,7 +158,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJSON(steps.create-deployment.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.create-deployment.outputs.data).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:
