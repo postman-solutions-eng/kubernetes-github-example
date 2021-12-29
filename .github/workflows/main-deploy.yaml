@@ -37,14 +37,14 @@ jobs:
         with:
           route: POST /repos/:repository/deployments
           repository: ${{ github.repository }}
-          data: ${{ toJson(env.REQUEST_BODY) }}
+          data: ${{ toJSON(env.REQUEST_BODY) }}
       - name: set deployment status to in progress
         id: start_deployment
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.create_deployment.outputs.data).id }}
+          deployment: ${{ fromJSON(steps.create_deployment.outputs.data).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: in_progress
         env:
@@ -76,7 +76,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.create_deployment.outputs.data).id }}
+          deployment: ${{ fromJSON(steps.create_deployment.outputs.data).id }}
           environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
@@ -89,7 +89,7 @@ jobs:
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.create_deployment.outputs.data).id }}
+          deployment: ${{ fromJSON(steps.create_deployment.outputs.data).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:

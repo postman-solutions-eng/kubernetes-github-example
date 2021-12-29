@@ -24,12 +24,12 @@ jobs:
       - name: set previous deployment as inactive
         if: |
           steps.check-previous.outputs.status != '404' &&
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.check-previous.outputs.data)[0].id }}
           environment: development
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: inactive

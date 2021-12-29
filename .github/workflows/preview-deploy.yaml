@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has-permission: |
-        ${{ contains(toJson("['admin', 'write']"), fromJson(steps.check-permissions.outputs.data).permission) }}
+        ${{ contains(fromJSON("['admin', 'write']"), fromJSON(steps.check-permissions.outputs.data).permission) }}
       triggered: ${{ steps.ack.outputs.triggered }}
     steps:
       - name: check if commenter has permission to deploy
@@ -61,12 +61,12 @@ jobs:
       - name: set previous deployment as inactive
         if: |
           steps.check-previous.outputs.status != '404' &&
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.check-previous.outputs.data)[0].id }}
           environment: development
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: inactive
@@ -86,7 +86,7 @@ jobs:
         uses: octokit/request-action@v2.x
         if: |
           steps.check-previous.outputs.status != '404' &&
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
         env:
           REQUEST_BODY: |
             ${{ format('{{
@@ -95,28 +95,28 @@ jobs:
               "auto_merge": false,
               "environment": "development",
               "required_contexts": ["push-test"]
-            }}', fromJson(steps.get-pull-request.outputs.data).head.ref) }}
+            }}', fromJSON(steps.get-pull-request.outputs.data).head.ref) }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           route: POST /repos/:repository/deployments
           repository: ${{ github.repository }}
-          data: ${{ toJson(env.REQUEST_BODY) }}
+          data: ${{ toJSON(env.REQUEST_BODY) }}
       - name: set deployment status to in progress
         uses: octokit/request-action@v2.x
         if: |
           steps.check-previous.outputs.status != '404' &&
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.create-deployment.outputs.data).id }}
+          deployment: ${{ fromJSON(steps.create-deployment.outputs.data).id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: in_progress
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - uses: actions/checkout@v2
         with:
-          ref: ${{ fromJson(steps.get-pull-request.outputs.data).head.sha }}
+          ref: ${{ fromJSON(steps.get-pull-request.outputs.data).head.sha }}
       - name: configure AWS credentials
         id: configure-aws
         uses: aws-actions/configure-aws-credentials@v1
@@ -130,7 +130,7 @@ jobs:
           ecr-repo-name: ${{ secrets.ECR_REPO }}
           build-target: app
           image-tag: ${{ format('dev-pr-{0}', github.event.issue.number) }}
-          sha: ${{ fromJson(steps.get-pull-request.outputs.data).head.sha }}
+          sha: ${{ fromJSON(steps.get-pull-request.outputs.data).head.sha }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.issue.number) }}
       - uses: ./.github/actions/kubernetes
         id: deploy-to-kubernetes
@@ -144,11 +144,11 @@ jobs:
         if: |
           success() && 
             steps.check-previous.outputs.status != '404' &&
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.check-previous.outputs.data)[0].id }}
           environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: success
@@ -159,11 +159,11 @@ jobs:
         if: |
           failure() && 
             steps.check-previous.outputs.status != '404' &&
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
+            toJSON(fromJSON(steps.check-previous.outputs.data)) != '[]'
         with:
           route: POST /repos/:repository/deployments/:deployment/statuses
           repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
+          deployment: ${{ fromJSON(steps.check-previous.outputs.data)[0].id }}
           log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           state: failure
         env:
