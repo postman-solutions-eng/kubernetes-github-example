@@ -93,7 +93,7 @@ jobs:
               "transient_environment": true,
               "auto_merge": false,
               "environment": "development",
-              "required_contexts": ["push-test"]
+              "required_contexts": ["test"]
             }}', fromJSON(steps.get-pull-request.outputs.data).head.ref) }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
