@@ -51,34 +51,3 @@ jobs:
           app-name: ${{ format('{0}-dev-pr-{1}', secrets.APP, github.event.number) }}
           name-suffix: ${{ format('-dev-pr-{0}', github.event.number) }}
           delete: true
-      - name: set deployment status to success
-        id: successful_deployment
-        uses: octokit/request-action@v2.x
-        if: |
-          success() && 
-            steps.check-previous.outputs.status != '404' && 
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
-        with:
-          route: POST /repos/:repository/deployments/:deployment/statuses
-          repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
-          environment_url: ${{ format('http://{0}', steps.deploy-to-kubernetes.outputs.url) }}
-          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          state: success
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - name: set deployment status to failure
-        id: failed_deployment
-        uses: octokit/request-action@v2.x
-        if: |
-          failure() && 
-            steps.check-previous.outputs.status != '404' && 
-            toJson(fromJson(steps.check-previous.outputs.data)) != '[]'
-        with:
-          route: POST /repos/:repository/deployments/:deployment/statuses
-          repository: ${{ github.repository }}
-          deployment: ${{ fromJson(steps.check-previous.outputs.data)[0].id }}
-          log_url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          state: failure
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'

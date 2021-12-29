@@ -60,4 +60,4 @@ runs:
         APP: ${{ inputs.app-name }}
       shell: bash
       run: |
-        kubectl delete -f "$RUNNER_TEMP/_resolved.yaml"
+        kubectl delete -f "$RUNNER_TEMP/_resolved.yaml" 2>&1 || true
