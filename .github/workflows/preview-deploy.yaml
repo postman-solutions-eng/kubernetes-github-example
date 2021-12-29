@@ -8,7 +8,7 @@ permissions:
   statuses: write
   pull-requests: write
 env:
-  PERMISSIONS: ['admin', 'write']
+  PERMISSIONS: '["admin", "write"]'
 jobs:
   check-permissions:
     runs-on: ubuntu-latest
