@@ -14,6 +14,8 @@ jobs:
       BUILDKIT_INLINE_CACHE: 1
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - shell: bash
         run: make test
   deploy:
@@ -50,6 +52,8 @@ jobs:
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - name: configure AWS credentials
         id: configure-aws
         uses: aws-actions/configure-aws-credentials@v1
