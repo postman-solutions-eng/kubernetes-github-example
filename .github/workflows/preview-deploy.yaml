@@ -10,6 +10,7 @@ permissions:
 jobs:
   check-permissions:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       collaborator: ${{ steps.check-permissions.outputs.data }}
       triggered: ${{ steps.ack.outputs.triggered }}
@@ -37,6 +38,7 @@ jobs:
       fromJSON(needs.check-permissions.outputs.collaborator).user.permissions.push == true &&
         needs.check-permissions.outputs.triggered == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: get issue from comment
         id: get-issue
