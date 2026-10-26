@@ -13,5 +13,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
       - shell: bash
         run: make test
